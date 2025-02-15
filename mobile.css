@@ -2,44 +2,48 @@
     --primary-color: #8B4513;
     --secondary-color: #f5e6d3;
     --text-color: #2c1810;
-    --hole-size: 45px;
-    --stone-size: 10px;
+    --hole-size: 35px;
+    --stone-size: 7px;
 }
 
 body {
     margin: 0;
-    padding: 10px;
+    padding: 5px;
     font-family: Arial, sans-serif;
     background-color: var(--secondary-color);
     color: var(--text-color);
+    max-width: 430px;
+    margin: 0 auto;
 }
 
 h1 {
     text-align: center;
-    font-size: 24px;
-    margin: 10px 0;
+    font-size: 20px;
+    margin: 5px 0;
 }
 
 #board {
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
     margin: 0 auto;
-    padding: 10px;
+    padding: 5px;
 }
 
 .turn-indicator {
     text-align: center;
-    padding: 8px;
+    padding: 5px;
     background: var(--primary-color);
     color: white;
     border-radius: 5px;
-    margin-bottom: 10px;
+    margin: 5px 0;
+    font-size: 14px;
 }
 
 .row {
     display: flex;
-    justify-content: space-around;
-    margin: 10px 0;
+    justify-content: space-between;
+    margin: 8px 0;
+    padding: 0 10px;
 }
 
 .hole {
@@ -51,8 +55,8 @@ h1 {
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    padding: 5px;
-    position: relative;
+    padding: 3px;
+    margin: 0;
 }
 
 .stone {
@@ -65,35 +69,37 @@ h1 {
 
 .scores {
     display: flex;
-    justify-content: space-around;
-    margin: 15px 0;
+    justify-content: space-between;
+    margin: 10px 20px;
 }
 
 .score-box {
     text-align: center;
-    padding: 10px;
+    padding: 8px;
     background: var(--primary-color);
     color: white;
     border-radius: 5px;
-    width: 45%;
+    width: 40%;
+    font-size: 14px;
 }
 
 .player-label {
     text-align: center;
-    margin: 5px 0;
+    margin: 3px 0;
     font-weight: bold;
+    font-size: 14px;
 }
 
 #rules-btn {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 12px 20px;
+    bottom: 15px;
+    right: 15px;
+    padding: 8px 15px;
     background: var(--primary-color);
     color: white;
     border-radius: 5px;
     border: none;
-    font-size: 16px;
+    font-size: 14px;
     z-index: 100;
 }
 
@@ -127,17 +133,42 @@ h1 {
 
 .language-switcher {
     position: fixed;
-    top: 10px;
-    left: 10px;
+    top: 8px;
+    left: 8px;
     display: flex;
-    gap: 5px;
+    gap: 3px;
 }
 
 .language-switcher button {
-    padding: 8px 12px;
+    padding: 5px 10px;
     background: var(--primary-color);
     color: white;
     border: none;
     border-radius: 5px;
-    font-size: 14px;
+    font-size: 12px;
+}
+
+/* 添加获胜提示框样式 */
+.win-content {
+    text-align: center;
+    padding: 30px;
+}
+
+.win-content h2 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+#restart-btn {
+    padding: 10px 25px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#restart-btn:hover {
+    opacity: 0.9;
 } 
