@@ -1,13 +1,3 @@
-// 在文件最开始添加这些代码
-console.log("脚本开始加载...");
-
-// 检查是否为本地环境
-const isLocalhost = window.location.hostname === 'localhost' || 
-                   window.location.hostname === '127.0.0.1' || 
-                   window.location.hostname === '';
-
-console.log("是否为本地环境:", isLocalhost);
-
 // 在文件开头添加设备检测
 function isMobile() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -16,180 +6,6 @@ function isMobile() {
 // 如果是移动设备，重定向到移动版
 if (isMobile()) {
     window.location.href = 'mobile.html';
-}
-
-// 将这些函数移到全局作用域
-function findBestMove(board, score, isFirstAI, moveHistory) {
-    let bestScore = -Infinity;
-    let bestMoves = [];
-    let allMoves = [];  // 记录所有可能移动的评分
-
-    for (let i = 9; i < 18; i++) {
-        if (board[i] > 0) {
-            let tempBoard = [...board];
-            let tempScore = evaluateMove(tempBoard, i, score, moveHistory);
-            
-            allMoves.push({
-                move: i - 9,
-                score: tempScore
-            });
-
-            if (tempScore > bestScore) {
-                bestScore = tempScore;
-                bestMoves = [i];
-            } else if (tempScore === bestScore) {
-                bestMoves.push(i);
-            }
-        }
-    }
-
-    // 输出所有可能移动的评分
-    console.log('%c所有可能的移动评分:', 'color: #2E8B57');
-    console.table(allMoves.sort((a, b) => b.score - a.score));
-
-    let selectedMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
-    console.log(`%c最终选择: ${selectedMove - 8} 号坑`, 'color: #FF4500; font-weight: bold');
-    
-    return selectedMove;
-}
-
-// 1. 添加深度学习机制
-class AILearner {
-    constructor() {
-        this.memory = [];
-        this.memorySize = 10000;
-        this.gamma = 0.95; // 折扣因子
-    }
-
-    // 记录每步移动的结果
-    recordMove(state, action, reward, nextState, done) {
-        this.memory.push({ state, action, reward, nextState, done });
-        if (this.memory.length > this.memorySize) {
-            this.memory.shift();
-        }
-    }
-
-    // 经验回放
-    replay() {
-        // 随机抽取批次
-        const batch = Array(this.batchSize).fill(0).map(() => 
-            this.memory[Math.floor(Math.random() * this.memory.length)]
-        );
-
-        batch.forEach(experience => {
-            const { state, action, reward, nextState, done } = experience;
-            // 计算目标Q值
-            // 更新权重
-        });
-    }
-}
-
-// 2. 改进评估函数，使用学习到的权重
-function evaluateMove(tempBoard, lastIndex, score, moveHistory, learner) {
-    let evaluation = 0;
-    let analysis = {};
-    
-    // 使用学习到的权重进行评估
-    analysis.continuity = calculateContinuityScore(tempBoard) * learner.weights.continuity;
-    analysis.local = calculateLocalScore(tempBoard, lastIndex) * learner.weights.local;
-    analysis.scoring = calculateScoringPotential(tempBoard, lastIndex) * learner.weights.scoring;
-    // ... 其他评估项
-
-    // 记录这步棋的特征
-    learner.recordMove(tempBoard, lastIndex, evaluation, 'pending');
-
-    return evaluation;
-}
-
-// 3. 添加模式识别
-function recognizePatterns(board) {
-    const patterns = {
-        'trap': checkTrapPattern(board),
-        'fork': checkForkPattern(board),
-        'blockade': checkBlockadePattern(board)
-    };
-    
-    console.log('%c识别到的棋型:', 'color: #9932CC');
-    console.table(patterns);
-    
-    return patterns;
-}
-
-// 4. 添加局势预测
-function predictFutureStates(board, depth = 3) {
-    let futures = [];
-    
-    // 模拟未来几步可能的局面
-    for (let i = 9; i < 18; i++) {
-        if (board[i] > 0) {
-            let simulation = simulateMove(board, i, depth);
-            futures.push(simulation);
-        }
-    }
-    
-    console.log('%c局势预测:', 'color: #008B8B');
-    console.table(futures);
-}
-
-// AI训练函数
-function trainAI() {
-    console.log("开始训练...");
-    let gamesPlayed = 0;
-    let wins1 = 0;
-    let wins2 = 0;
-
-    function playOneGame() {
-        console.log(`开始第 ${gamesPlayed + 1} 局训练`);
-        if (gamesPlayed >= 1000) {
-            console.log("训练完成！");
-            console.log(`AI-1获胜: ${wins1}次`);
-            console.log(`AI-2获胜: ${wins2}次`);
-            return;
-        }
-
-        // 其他逻辑...
-    }
-
-    playOneGame();
-}
-
-// 添加训练按钮
-if (isLocalhost) {
-    window.addEventListener('load', function() {
-        console.log("添加训练按钮...");
-        const trainButton = document.createElement('div');
-        trainButton.id = 'train-btn';
-        trainButton.textContent = '训练AI';
-        trainButton.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 100px;
-            padding: 15px 25px;
-            background: #8B4513;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            z-index: 1001;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: background-color 0.3s;
-        `;
-        
-        trainButton.onmouseover = function() {
-            this.style.backgroundColor = '#654321';
-        };
-        trainButton.onmouseout = function() {
-            this.style.backgroundColor = '#8B4513';
-        };
-        
-        trainButton.onclick = function() {
-            console.log("开始训练...");
-            trainAI();
-        };
-
-        document.body.appendChild(trainButton);
-        console.log("训练按钮已添加");
-    });
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -324,7 +140,11 @@ document.addEventListener("DOMContentLoaded", function () {
     function distributeStones(startIndex, player) {
         let stones = board[startIndex];
         let currentIndex = startIndex;
-        
+
+        // 定义 oldState 和 oldPlayerScore
+        const oldState = [...board]; // 在这里获取当前棋盘状态
+        const oldPlayerScore = playerScore; // 在这里获取当前玩家得分
+
         if (stones === 1) {
             board[startIndex] = 0;
         } else {
@@ -343,27 +163,19 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                 checkCapture(currentIndex, player);
                 
-                // 检查得分
-                if (playerScore >= 81 || aiScore >= 81) {
-                    const winModal = document.getElementById('win-modal');
-                    const winMessage = document.getElementById('win-message');
+                // 检查得分情况
+                if (!checkScore()) {
+                    isPlayerTurn = !isPlayerTurn;
+                    renderBoard();
                     
-                    if (playerScore >= 81) {
-                        winMessage.textContent = '恭喜你获胜！';
-                    } else if (aiScore >= 81) {
-                        winMessage.textContent = 'AI获胜！';
+                    if (!isPlayerTurn) {
+                        setTimeout(aiMove, 1000);
                     }
-                    
-                    winModal.style.display = 'block';
-                    return;
                 }
                 
-                isPlayerTurn = !isPlayerTurn;
-                renderBoard();
-                
-                if (!isPlayerTurn) {
-                    setTimeout(aiMove, 1000);
-                }
+                // 重新启用坑的点击事件
+                const holes = document.querySelectorAll('.hole');
+                holes.forEach(h => h.style.pointerEvents = 'auto');
             }
         }
         
@@ -394,34 +206,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // AI移动函数
     function aiMove() {
-        const state = deepAI.stateToInput(board, {
-            ai: aiScore,
-            player: playerScore
-        }, moveHistory);
-        
-        const move = deepAI.selectMove(board, {
-            ai: aiScore,
-            player: playerScore
-        }, moveHistory);
-
         // 保存移动前的状态
-        const oldPlayerScore = playerScore; // 确保在使用前声明
-        distributeStones(move, "ai");
-
-        // 计算奖励
-        const reward = aiScore - oldPlayerScore; // 使用旧得分计算奖励
+        const oldState = [...board];
+        const oldScore = aiScore;
         
-        // 学习这步移动
-        const nextState = deepAI.stateToInput(board, {
-            ai: aiScore,
-            player: playerScore
-        }, moveHistory);
+        // 使用Q-learning选择动作
+        const action = aiLearner.chooseAction(board);
         
-        deepAI.learn(state, move, reward, nextState, false);
-
-        // 定期保存学习结果
-        if (Math.random() < 0.1) { // 10%的概率保存
-            deepAI.save();
+        // 执行移动
+        distributeStones(action, "ai");
+        
+        // 计算奖励（基于得分变化）
+        const reward = aiScore - oldScore;
+        
+        // 更新Q值
+        aiLearner.updateQValue(oldState, action, reward, board);
+        
+        // 每局结束时保存学习结果
+        if (checkGameOver()) {
+            saveAIProgress();
         }
     }
 
@@ -582,6 +385,134 @@ document.addEventListener("DOMContentLoaded", function () {
     window.addEventListener('DOMContentLoaded', function() {
         loadAIProgress();
     });
+
+    // AI自我训练函数
+    function trainAI(numGames = 50) {
+        const originalBoard = [...board];
+        const originalPlayerScore = playerScore;
+        const originalAIScore = aiScore;
+        const originalIsPlayerTurn = isPlayerTurn;
+        
+        // 创建训练进度显示
+        const progressDiv = document.createElement('div');
+        progressDiv.style.position = 'fixed';
+        progressDiv.style.top = '50%';
+        progressDiv.style.left = '50%';
+        progressDiv.style.transform = 'translate(-50%, -50%)';
+        progressDiv.style.padding = '20px';
+        progressDiv.style.background = '#8B4513';
+        progressDiv.style.color = '#fff';
+        progressDiv.style.borderRadius = '10px';
+        progressDiv.style.zIndex = '1000';
+        document.body.appendChild(progressDiv);
+
+        let gameCount = 0;
+        
+        // 创建第二个AI实例
+        const aiLearner2 = new QLearn();
+        
+        function playOneGame() {
+            // 重置游戏状态
+            board = new Array(18).fill(9);
+            playerScore = 0;
+            aiScore = 0;
+            let ai1Score = 0;
+            let ai2Score = 0;
+            let isAI1Turn = true;
+            
+            // 显示训练进度
+            progressDiv.textContent = `AI自我对战训练中: ${gameCount + 1}/${numGames}`;
+            
+            function simulateMove() {
+                if (!checkGameEnd()) {
+                    // 当前AI
+                    const currentAI = isAI1Turn ? aiLearner : aiLearner2;
+                    // 当前分数
+                    const currentScore = isAI1Turn ? ai1Score : ai2Score;
+                    
+                    // 保存移动前的状态
+                    const oldState = [...board];
+                    
+                    // 使用Q-learning选择动作
+                    const action = currentAI.chooseAction(isAI1Turn ? board : board.map((v, i) => {
+                        // 对AI2来说，需要翻转棋盘视角
+                        if (i < 9) return board[i + 9];
+                        return board[i - 9];
+                    }));
+                    
+                    // 执行移动
+                    let stones = board[action];
+                    let currentIndex = action;
+                    
+                    // 模拟移动
+                    if (stones === 1) {
+                        board[action] = 0;
+                    } else {
+                        board[action] = 1;
+                        stones--;
+                    }
+                    
+                    while (stones > 0) {
+                        currentIndex = (currentIndex + 1) % 18;
+                        board[currentIndex]++;
+                        stones--;
+                    }
+                    
+                    // 检查吃子
+                    if (board[currentIndex] % 2 === 0) {
+                        if (isAI1Turn) {
+                            ai1Score += board[currentIndex];
+                        } else {
+                            ai2Score += board[currentIndex];
+                        }
+                        board[currentIndex] = 0;
+                    }
+                    
+                    // 计算奖励
+                    const reward = (isAI1Turn ? ai1Score : ai2Score) - currentScore;
+                    
+                    // 更新Q值
+                    currentAI.updateQValue(oldState, action, reward, board);
+                    
+                    // 切换AI
+                    isAI1Turn = !isAI1Turn;
+                    
+                    // 继续模拟
+                    setTimeout(simulateMove, 0);
+                } else {
+                    // 根据对战结果给予额外奖励
+                    const finalReward = ai1Score > ai2Score ? 100 : (ai1Score < ai2Score ? -100 : 0);
+                    aiLearner.updateQValue(board, 0, finalReward, board);
+                    aiLearner2.updateQValue(board, 0, -finalReward, board);
+                    
+                    gameCount++;
+                    if (gameCount < numGames) {
+                        // 开始下一局
+                        setTimeout(playOneGame, 0);
+                    } else {
+                        // 训练完成
+                        progressDiv.textContent = 'AI自我对战训练完成！';
+                        setTimeout(() => {
+                            document.body.removeChild(progressDiv);
+                            // 恢复原始游戏状态
+                            board = [...originalBoard];
+                            playerScore = originalPlayerScore;
+                            aiScore = originalAIScore;
+                            isPlayerTurn = originalIsPlayerTurn;
+                            renderBoard();
+                            // 保存学习结果
+                            saveAIProgress();
+                        }, 1000);
+                    }
+                }
+            }
+            
+            simulateMove();
+        }
+        
+        // 开始训练
+        playOneGame();
+    }
 
     // 检查游戏是否结束的辅助函数
     function checkGameEnd() {
@@ -780,150 +711,5 @@ document.addEventListener("DOMContentLoaded", function () {
         renderBoard();
     }
 
-    // 添加日志记录功能
-    function logAIThinking(board, move, evaluation, score, phase) {
-        console.log(`
-%cAI 思考分析:
-移动: ${move + 1} 号坑
-局面评估: ${evaluation.toFixed(2)}
-当前得分: ${score}
-游戏阶段: ${phase}
-局面分析:
-AI区域:    ${board.slice(9, 18).join(' | ')}
-玩家区域:  ${board.slice(0, 9).join(' | ')}
-`, 'color: #8B4513; font-weight: bold;');
-    }
-
-    // 在原有的游戏逻辑中添加对局统计
-    let gameStats = {
-        totalGames: 0,
-        aiWins: 0,
-        playerWins: 0,
-        draws: 0,
-        averageScore: {
-            ai: 0,
-            player: 0
-        }
-    };
-
-    // 在游戏结束时更新统计
-    function updateGameStats(aiScore, playerScore) {
-        gameStats.totalGames++;
-        if (aiScore > playerScore) {
-            gameStats.aiWins++;
-        } else if (playerScore > aiScore) {
-            gameStats.playerWins++;
-        } else {
-            gameStats.draws++;
-        }
-        
-        gameStats.averageScore.ai = (gameStats.averageScore.ai * (gameStats.totalGames - 1) + aiScore) / gameStats.totalGames;
-        gameStats.averageScore.player = (gameStats.averageScore.player * (gameStats.totalGames - 1) + playerScore) / gameStats.totalGames;
-
-        console.log('%c对局统计:', 'color: #4B0082; font-weight: bold');
-        console.table(gameStats);
-    }
-
-    let gameHistory = [];
-
-    function logMove(move, score) {
-        gameHistory.push({ move, score });
-    }
-
-    function displayGameHistory() {
-        console.log("对局历史:", gameHistory);
-    }
-
-    function updateHistoryDisplay() {
-        const historyList = document.getElementById('history-list');
-        historyList.innerHTML = ''; // 清空当前列表
-        gameHistory.forEach(entry => {
-            const li = document.createElement('li');
-            li.textContent = `移动: ${entry.move}, 得分: ${entry.score}`;
-            historyList.appendChild(li);
-        });
-    }
-
     renderBoard();
 });
-
-// 神经网络类
-class NeuralNetwork {
-    constructor(inputSize, hiddenSizes, outputSize) {
-        this.weights = [];
-        this.layers = [inputSize, ...hiddenSizes, outputSize];
-
-        for (let i = 0; i < this.layers.length - 1; i++) {
-            this.weights[i] = new Array(this.layers[i]).fill(0).map(() => 
-                new Array(this.layers[i + 1]).fill(0).map(() => Math.random() - 0.5)
-            );
-        }
-        this.learningRate = 0.01;
-    }
-
-    forward(input) {
-        this.activations = [input];
-        for (let i = 0; i < this.weights.length; i++) {
-            const z = this.weights[i].map(row => 
-                this.activations[i].reduce((sum, val, j) => sum + val * row[j], 0)
-            );
-            this.activations.push(z.map(x => 1 / (1 + Math.exp(-x)))); // sigmoid激活函数
-        }
-        return this.activations[this.activations.length - 1];
-    }
-
-    backward(input, target) {
-        // 反向传播算法
-        const outputError = this.activations[this.activations.length - 1].map((o, i) => o - target[i]);
-        // 计算隐藏层误差并更新权重
-        for (let i = this.weights.length - 1; i >= 0; i--) {
-            const hiddenError = this.weights[i].map((_, j) =>
-                outputError.reduce((sum, err, k) => sum + err * this.weights[i][k][j], 0)
-            );
-
-            // 更新权重
-            this.weights[i] = this.weights[i].map((row, j) =>
-                row.map((w, k) => w - this.learningRate * outputError[j] * this.activations[i][k])
-            );
-            outputError = hiddenError;
-        }
-    }
-}
-
-// 深度学习 AI 类
-class DeepLearningAI {
-    constructor() {
-        this.memory = [];
-        this.memorySize = 10000;
-        this.batchSize = 32;
-        this.gamma = 0.95; // 折扣因子
-    }
-
-    // 经验回放
-    replay() {
-        const batch = Array(this.batchSize).fill(0).map(() => 
-            this.memory[Math.floor(Math.random() * this.memory.length)]
-        );
-
-        batch.forEach(experience => {
-            const { state, action, reward, nextState, done } = experience;
-            // 计算目标Q值
-            // 更新权重
-        });
-    }
-
-    load() {
-        const data = JSON.parse(localStorage.getItem('aiModel'));
-        if (data) {
-            this.network.weights1 = data.weights1;
-            this.network.weights2 = data.weights2;
-            this.memory = data.memory;
-        }
-    }
-}
-
-// 在游戏中使用深度学习AI
-const deepAI = new DeepLearningAI();
-console.log("加载AI模型...");
-deepAI.load(); // 加载之前的学习结果
-console.log("AI模型加载完成");
