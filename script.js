@@ -166,7 +166,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     
                     if (playerScore >= 81) {
                         winMessage.textContent = '恭喜你获胜！';
-                    } else {
+                    } else if (aiScore >= 81) {
                         winMessage.textContent = 'AI获胜！';
                     }
                     
