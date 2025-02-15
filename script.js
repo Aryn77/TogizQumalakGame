@@ -1,3 +1,13 @@
+// 在文件开头添加设备检测
+function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+// 如果是移动设备，重定向到移动版
+if (isMobile()) {
+    window.location.href = 'mobile.html';
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     // 在现有代码的开头添加以下内容
     const rulesBtn = document.getElementById("rules-btn");
@@ -99,6 +109,33 @@ document.addEventListener("DOMContentLoaded", function () {
         return hole;
     }
 
+    // 检查得分函数
+    function checkScore() {
+        // 检查是否有人达到81分或所有坑都空了
+        let playerEmpty = board.slice(0, 9).every(x => x === 0);
+        let aiEmpty = board.slice(9, 18).every(x => x === 0);
+        
+        if (playerScore >= 81 || aiScore >= 81 || playerEmpty || aiEmpty) {
+            const winModal = document.getElementById('win-modal');
+            const winMessage = document.getElementById('win-message');
+            const t = translations[currentLang];
+            
+            let message = '';
+            if (playerScore >= 81 || (aiEmpty && playerScore > aiScore)) {
+                message = t.playerWin;
+            } else if (aiScore >= 81 || (playerEmpty && aiScore > playerScore)) {
+                message = t.aiWin;
+            } else if (playerScore === aiScore) {
+                message = t.draw;
+            }
+            
+            winMessage.textContent = `${message}\n${t.finalScore}: ${t.player} ${playerScore}, ${t.ai} ${aiScore}`;
+            winModal.style.display = 'block';
+            return true;
+        }
+        return false;
+    }
+
     // 分发棋子函数
     function distributeStones(startIndex, player) {
         let stones = board[startIndex];
@@ -108,7 +145,7 @@ document.addEventListener("DOMContentLoaded", function () {
             board[startIndex] = 0;
         } else {
             board[startIndex] = 1;
-            stones -= 1;
+            stones--;
         }
 
         function dropStone() {
@@ -117,19 +154,28 @@ document.addEventListener("DOMContentLoaded", function () {
                 board[currentIndex]++;
                 stones--;
                 
-                // 渲染并等待动画完成
                 renderBoard();
                 setTimeout(dropStone, 300);
             } else {
-                // 动画完成后的处理
                 checkCapture(currentIndex, player);
-                checkGameOver();
+                
+                // 检查得分
+                if (playerScore >= 81 || aiScore >= 81) {
+                    const winModal = document.getElementById('win-modal');
+                    const winMessage = document.getElementById('win-message');
+                    
+                    if (playerScore >= 81) {
+                        winMessage.textContent = '恭喜你获胜！';
+                    } else {
+                        winMessage.textContent = 'AI获胜！';
+                    }
+                    
+                    winModal.style.display = 'block';
+                    return;
+                }
+                
                 isPlayerTurn = !isPlayerTurn;
                 renderBoard();
-                
-                // 重新启用坑的点击事件
-                const holes = document.querySelectorAll('.hole');
-                holes.forEach(h => h.style.pointerEvents = 'auto');
                 
                 if (!isPlayerTurn) {
                     setTimeout(aiMove, 1000);
@@ -162,39 +208,87 @@ document.addEventListener("DOMContentLoaded", function () {
         updateScoreDisplay();
     }
 
-    // 检查游戏结束函数
-    function checkGameOver() {
-        let playerEmpty = board.slice(0, 9).every(x => x === 0);
-        let aiEmpty = board.slice(9, 18).every(x => x === 0);
-        if (playerEmpty || aiEmpty) {
-            alert(`游戏结束！玩家得分：${playerScore}，AI得分：${aiScore}`);
-            return true;
-        }
-        return false;
-    }
-
     // AI移动函数
     function aiMove() {
         // 保存移动前的状态
         const oldState = [...board];
         const oldScore = aiScore;
         
-        // 使用Q-learning选择动作
-        const action = aiLearner.chooseAction(board);
+        // 选择最佳移动
+        let bestIndex = -1;
+        let bestScore = -Infinity;
         
-        // 执行移动
-        distributeStones(action, "ai");
-        
-        // 计算奖励（基于得分变化）
-        const reward = aiScore - oldScore;
-        
-        // 更新Q值
-        aiLearner.updateQValue(oldState, action, reward, board);
-        
-        // 每局结束时保存学习结果
-        if (checkGameOver()) {
-            saveAIProgress();
+        // 遍历所有可能的移动
+        for (let i = 9; i < 18; i++) {
+            if (board[i] > 0) {
+                // 模拟这个移动
+                let tempBoard = [...board];
+                let tempScore = aiScore;
+                let stones = tempBoard[i];
+                let currentIndex = i;
+                
+                // 模拟分发棋子
+                if (stones === 1) {
+                    tempBoard[i] = 0;
+                } else {
+                    tempBoard[i] = 1;
+                    stones--;
+                }
+                
+                // 分发剩余的棋子
+                while (stones > 0) {
+                    currentIndex = (currentIndex + 1) % 18;
+                    tempBoard[currentIndex]++;
+                    stones--;
+                }
+                
+                // 评估这个移动
+                let score = evaluateMove(tempBoard, currentIndex, tempScore);
+                
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestIndex = i;
+                }
+            }
         }
+        
+        // 执行最佳移动
+        if (bestIndex !== -1) {
+            distributeStones(bestIndex, "ai");
+        }
+    }
+
+    // 评估移动的函数
+    function evaluateMove(tempBoard, lastIndex, score) {
+        let evaluation = 0;
+        
+        // 1. 考虑得分机会
+        if (tempBoard[lastIndex] % 2 === 0) {
+            evaluation += 10 * tempBoard[lastIndex];
+        }
+        
+        // 2. 考虑占据更多棋子
+        let aiStones = tempBoard.slice(9, 18).reduce((a, b) => a + b, 0);
+        evaluation += aiStones;
+        
+        // 3. 防守性考虑
+        let playerStones = tempBoard.slice(0, 9).reduce((a, b) => a + b, 0);
+        evaluation -= playerStones * 0.5;
+        
+        // 4. 特殊位置考虑
+        if (lastIndex >= 9 && lastIndex < 18) {
+            evaluation += 5;  // 落在自己这边的优势
+        }
+        
+        // 5. 考虑当前得分
+        evaluation += score * 2;
+        
+        // 6. 考虑获胜机会
+        if (score >= 81) {
+            evaluation += 1000;
+        }
+        
+        return evaluation;
     }
 
     // 更新回合指示器
@@ -256,7 +350,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // 获取所有可能的动作（可选择的坑）
         getValidActions(board) {
             let actions = [];
-            for (let i = 9; i < 18; i++) {
+        for (let i = 9; i < 18; i++) {
                 if (board[i] > 0) {
                     actions.push(i);
                 }
@@ -511,7 +605,12 @@ document.addEventListener("DOMContentLoaded", function () {
             trainAI: '训练AI (50局)',
             training: 'AI自我对战训练中',
             trainingComplete: 'AI自我对战训练完成！',
-            selectLanguage: '选择语言'
+            selectLanguage: '选择语言',
+            playerWin: '恭喜你获胜！',
+            aiWin: 'AI获胜！',
+            draw: '平局！',
+            restart: '重新开始',
+            finalScore: '最终得分'
         },
         en: {
             title: 'Toguz Kumalak',
@@ -533,7 +632,12 @@ document.addEventListener("DOMContentLoaded", function () {
             trainAI: 'Train AI (50 games)',
             training: 'AI Self-Training',
             trainingComplete: 'AI Training Complete!',
-            selectLanguage: 'Select Language'
+            selectLanguage: 'Select Language',
+            playerWin: 'Congratulations! You Win!',
+            aiWin: 'AI Wins!',
+            draw: "It's a Draw!",
+            restart: 'Restart Game',
+            finalScore: 'Final Score'
         },
         kk: {
             title: 'Тоғыз құмалақ',
@@ -555,7 +659,12 @@ document.addEventListener("DOMContentLoaded", function () {
             trainAI: 'AI жаттығу (50 ойын)',
             training: 'AI өзін-өзі жаттықтыруда',
             trainingComplete: 'AI жаттығуы аяқталды!',
-            selectLanguage: 'Тілді таңдау'
+            selectLanguage: 'Тілді таңдау',
+            playerWin: 'Құттықтаймыз! Сіз жеңдіңіз!',
+            aiWin: 'AI жеңді!',
+            draw: 'Тең ойын!',
+            restart: 'Қайта бастау',
+            finalScore: 'Соңғы есеп'
         }
     };
 
@@ -649,6 +758,21 @@ document.addEventListener("DOMContentLoaded", function () {
         createLanguageSelector();
         loadAIProgress();
     });
+
+    // 添加重开游戏功能
+    document.getElementById('restart-btn').onclick = function() {
+        // 重置游戏状态
+        board = new Array(18).fill(9);
+        playerScore = 0;
+        aiScore = 0;
+        isPlayerTurn = true;
+        
+        // 隐藏获胜提示
+        document.getElementById('win-modal').style.display = 'none';
+        
+        // 重新渲染棋盘
+        renderBoard();
+    }
 
     renderBoard();
 });
