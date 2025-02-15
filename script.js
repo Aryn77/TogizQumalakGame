@@ -166,10 +166,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 // 检查得分情况
                 if (!checkScore()) {
                     isPlayerTurn = !isPlayerTurn;
-                    renderBoard();
+                renderBoard();
                     
-                    if (!isPlayerTurn) {
-                        setTimeout(aiMove, 1000);
+                if (!isPlayerTurn) {
+                    setTimeout(aiMove, 1000);
                     }
                 }
                 
