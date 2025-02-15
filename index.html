@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="托古兹库玛拉克 - 传统哈萨克棋类游戏">
+    <title>托古兹库玛拉克 | Togyz Kumalak</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="rules-btn">规则说明</div>
+    
+    <div id="rules-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>托古兹库玛拉克规则</h2>
+            <div class="rules-text">
+                <!-- 规则内容会通过JavaScript动态更新 -->
+            </div>
+        </div>
+    </div>
+
+    <h1>Toguz Kumalak</h1>
+    <div id="scores">
+        <p>玩家得分: <span id="player-score">0</span></p>
+        <p>AI 得分: <span id="ai-score">0</span></p>
+        <p><strong id="turn">玩家回合</strong></p>
+    </div>
+    <div id="board">
+        <div class="white-turn">Current Turn: Player</div>
+        <div class="player-indicator ai-indicator">AI</div>
+        <div id="ai-row" class="row"></div>
+        <div class="score-container">
+            <span>AI得分:</span>
+            <div class="score-stones" id="ai-score-stones"></div>
+            <div class="score-value">0</div>
+        </div>
+        <div class="score-container">
+            <span>玩家得分:</span>
+            <div class="score-stones" id="player-score-stones"></div>
+            <div class="score-value">0</div>
+        </div>
+        <div id="player-row" class="row"></div>
+        <div class="player-indicator">玩家</div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

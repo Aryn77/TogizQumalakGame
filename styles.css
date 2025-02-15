@@ -1,0 +1,442 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    text-align: center;
+    background: #f5d6a1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+h1 {
+    margin-bottom: 30px;
+    color: #2c1810;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 2.5em;
+    font-family: 'Times New Roman', serif;
+    position: relative;
+    padding: 0 50px;
+}
+
+h1::before, h1::after {
+    content: "☘";  /* 使用装饰性符号 */
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8B4513;
+    font-size: 1.5em;
+}
+
+h1::before {
+    left: 0;
+}
+
+h1::after {
+    right: 0;
+}
+
+#scores {
+    display: none;
+}
+
+#board {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #b17f4a;
+    padding: 50px;
+    width: 1000px;
+    position: relative;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    margin-top: 20px;
+    border: 15px solid #8B4513;
+    background-image: 
+        /* 基础卷草纹单元 */
+        radial-gradient(
+            circle at 50% 50%,
+            transparent 30%,
+            rgba(139, 69, 19, 0.2) 31%,
+            rgba(139, 69, 19, 0.2) 35%,
+            transparent 36%
+        ),
+        /* 四个角的卷草 */
+        radial-gradient(
+            circle at 0% 0%,
+            transparent 60%,
+            rgba(139, 69, 19, 0.2) 61%,
+            rgba(139, 69, 19, 0.2) 65%,
+            transparent 66%
+        ),
+        /* 连接线 */
+        linear-gradient(
+            45deg,
+            transparent 48%,
+            rgba(139, 69, 19, 0.2) 49%,
+            rgba(139, 69, 19, 0.2) 51%,
+            transparent 52%
+        );
+    background-size: 100px 100px, 100px 100px, 100px 100px;
+    background-repeat: repeat, repeat, repeat;
+}
+
+#board:hover {
+    transform: none;
+}
+
+.player-label {
+    display: none;
+}
+
+/* 统一棋盘行的样式 */
+.row {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 25px;       /* 增加坑之间的间距 */
+    margin: 30px 0;  /* 增加垂直间距 */
+    width: 100%;
+    background: transparent;
+}
+
+/* AI棋盘行 */
+#ai-row {
+    margin-bottom: 30px;
+    background: none;
+    flex-direction: row-reverse;
+    position: relative;
+}
+
+/* 玩家棋盘行 */
+#player-row {
+    margin-top: 30px;
+    background: none;
+    position: relative;
+}
+
+/* 统一棋坑样式 */
+.hole {
+    width: 80px;
+    height: 150px;
+    background: #8B4513;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    position: relative;
+    padding: 10px;
+    box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.4);
+    max-width: 80px;
+    overflow: hidden;
+    border: 2px solid #654321;
+    background-image: 
+        /* 传统卷草纹 */
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 20%),
+        radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 20%),
+        /* 边框装饰 */
+        linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.1) 45%, transparent 50%),
+        linear-gradient(-45deg, transparent 40%, rgba(255, 255, 255, 0.1) 45%, transparent 50%);
+    background-size: 30px 30px, 30px 30px, 20px 20px, 20px 20px;
+}
+
+.hole:hover {
+    background: linear-gradient(145deg, #f8eadb, #f0d9b5);
+    border-color: #b08d5f;
+}
+
+.hole.active-hole {
+    cursor: pointer;
+}
+
+.hole.active-hole:hover {
+    background: linear-gradient(145deg, #f8eadb, #f0d9b5);
+    border-color: #b08d5f;
+}
+
+/* 玩家棋坑的特殊样式 */
+#player-row .hole .stones-container {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    max-height: 100px;
+    align-content: center;
+    gap: 3px;
+    width: 100%;
+    padding: 4px;
+    margin-bottom: 15px;
+    justify-content: flex-end;  /* 底部对齐 */
+}
+
+/* AI棋坑保持原样 */
+#ai-row .hole .stones-container {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    max-height: 100px;
+    align-content: center;
+    gap: 3px;
+    width: 100%;
+    padding: 4px;
+    margin-bottom: 15px;
+    justify-content: flex-start;  /* 顶部对齐 */
+}
+
+.stone {
+    width: 14px;
+    height: 14px;
+    background: #f5f5f5;
+    border-radius: 50%;
+    margin: 1px;
+    box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+}
+
+.hole:hover .stone {
+    transform: none;
+}
+
+/* 确保数字标签不会被棋子遮挡 */
+.hole-label {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 16px;
+    color: #f5f5f5;
+    font-weight: bold;
+    z-index: 1;
+    background: rgba(139, 69, 19, 0.8);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+#turn {
+    font-weight: bold;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #5c3d2e;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes fadeIn {
+    0% { opacity: 1; }
+    100% { opacity: 1; }
+}
+
+/* 规则按钮样式 */
+#rules-btn {
+    position: fixed;
+    top: 80px;  /* 调整到AI训练按钮下方 */
+    right: 20px;
+    padding: 10px 20px;
+    background: #8B4513;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+/* 语言选择按钮容器样式 */
+.lang-container {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+
+/* 训练按钮样式 */
+.train-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background: #8B4513;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: relative;
+    background: linear-gradient(145deg, #f5e6d3, #f0d9b5);
+    margin: 15% auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #5c3d2e;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #7a5240;
+}
+
+.rules-text {
+    text-align: left;
+    color: #2c1810;
+    line-height: 1.6;
+    padding: 10px;
+}
+
+.rules-text p {
+    margin: 10px 0;
+}
+
+h2 {
+    color: #2c1810;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* 回合指示器 */
+.white-turn {
+    position: relative;
+    left: 0;
+    top: 0;
+    transform: none;
+    background: #8B4513;
+    color: #f5f5f5;
+    padding: 15px 25px;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 20px;
+    box-shadow: none;
+    margin: 20px 0;
+}
+
+/* AI得分显示区域 */
+#ai-score-display {
+    position: absolute;
+    right: -100px;
+    top: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #8B4513;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* 玩家得分显示区域 */
+#player-score-display {
+    position: absolute;
+    left: -100px;
+    bottom: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #8B4513;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.score-label {
+    color: #f5f5f5;
+    font-size: 16px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.score-stones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1;
+    padding: 8px;
+}
+
+.score-stone {
+    width: 16px;
+    height: 16px;
+    background: #f5f5f5;
+    border-radius: 50%;
+    box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 玩家标识基础样式 */
+.player-indicator {
+    position: absolute;
+    left: -120px;
+    background: transparent;
+    color: #8B4513;
+    font-weight: bold;
+    font-size: 22px;
+    padding: 15px 15px;
+    box-shadow: none;
+    z-index: 10;
+}
+
+/* 专门处理"玩家"两字的间距 */
+.player-indicator:not(.ai-indicator) {
+    position: absolute;
+    bottom: 150px;
+    word-spacing: -8px;
+}
+
+/* AI标识位置 */
+.ai-indicator {
+    position: absolute;
+    top: 200px;  /* AI标识再向下调整到200px */
+}
+
+/* 中间的得分区域 - 减少视觉重量 */
+.score-container {
+    height: 60px;
+    background: rgba(139, 69, 19, 0.8);  /* 降低不透明度 */
+    width: 80%;  /* 减少宽度 */
+    border-radius: 15px;
+    margin: 10px 0;  /* 减少间距 */
+    box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    padding: 0 30px;
+    gap: 20px;
+    border: 2px solid rgba(101, 67, 33, 0.5);  /* 淡化边框 */
+}
+
+.score-container span {
+    color: #f5f5f5;
+    font-size: 18px;
+    min-width: 100px;
+    text-align: left;
+}
+
+.score-value {
+    color: #f5f5f5;
+    font-weight: bold;
+    margin-left: auto;  /* 将数字推到右边 */
+    font-size: 20px;
+}
