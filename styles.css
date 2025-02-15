@@ -470,30 +470,193 @@ h2 {
 
 /* 自适应布局 */
 @media screen and (max-width: 768px) {
-    #board {
-        width: 100%;
+    body {
         padding: 10px;
     }
 
+    h1 {
+        font-size: 20px;
+        margin: 10px 0;
+    }
+
+    #board {
+        width: 95%;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
     .hole {
-        width: 40px; /* 调整坑的大小 */
-        height: 40px;
+        width: 35px;
+        height: 35px;
+        margin: 3px;
     }
 
     .stone {
-        width: 8px; /* 调整棋子的大小 */
-        height: 8px;
+        width: 6px;
+        height: 6px;
+        margin: 1px;
     }
 
-    .score-box {
-        width: 45%; /* 调整得分框的宽度 */
+    .score-container {
+        margin: 10px 0;
     }
 
-    .turn-indicator {
-        font-size: 16px; /* 调整字体大小 */
+    .score-stones {
+        margin: 5px 0;
+    }
+
+    .score-stone {
+        width: 6px;
+        height: 6px;
+        margin: 1px;
+    }
+
+    .white-turn {
+        font-size: 14px;
+        padding: 8px;
+        margin: 5px 0;
+    }
+
+    .player-indicator {
+        font-size: 14px;
+        margin: 5px 0;
+    }
+
+    /* 语言选择按钮 */
+    .language-switcher {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        display: flex;
+        gap: 5px;
+    }
+
+    .language-switcher button {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    /* 规则按钮 */
+    #rules-btn {
+        position: fixed;
+        bottom: 15px;
+        right: 15px;
+        padding: 8px 15px;
+        font-size: 14px;
+    }
+}
+
+/* 更小屏幕的适配 */
+@media screen and (max-width: 375px) {
+    .hole {
+        width: 30px;
+        height: 30px;
+        margin: 2px;
+    }
+
+    .stone {
+        width: 5px;
+        height: 5px;
+    }
+
+    .score-stone {
+        width: 5px;
+        height: 5px;
+    }
+}
+
+/* 移动端适配 */
+@media screen and (max-width: 430px) {
+    body {
+        padding: 0;
+        margin: 0;
+        min-height: 100vh;
     }
 
     h1 {
-        font-size: 24px; /* 调整标题字体大小 */
+        font-size: 24px;
+        margin: 15px 0;
+        padding: 0 20px;
+    }
+
+    h1::before, h1::after {
+        display: none;  /* 移除装饰 */
+    }
+
+    #board {
+        width: 100%;
+        max-width: 400px;
+        padding: 20px 10px;
+        margin: 10px auto;
+        border-width: 8px;  /* 减小边框宽度 */
+    }
+
+    .row {
+        gap: 8px;  /* 减小间距 */
+        margin: 15px 0;
+    }
+
+    .hole {
+        width: 38px;
+        height: 70px;  /* 减小高度 */
+        padding: 5px;
+        border-width: 1px;
+    }
+
+    .stone {
+        width: 6px;
+        height: 6px;
+        margin: 1px;
+    }
+
+    .score-container {
+        width: 90%;
+        height: 40px;
+        padding: 0 15px;
+        margin: 8px auto;
+    }
+
+    .score-container span {
+        font-size: 14px;
+        min-width: 60px;
+    }
+
+    .white-turn {
+        font-size: 16px;
+        padding: 8px 15px;
+        margin: 10px 0;
+    }
+
+    .player-indicator {
+        display: none;  /* 移除玩家标识 */
+    }
+
+    /* 语言切换按钮 */
+    .language-switcher {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        display: flex;
+        gap: 4px;
+    }
+
+    .language-switcher button {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    /* 规则按钮 */
+    #rules-btn {
+        position: fixed;
+        bottom: 15px;
+        right: 15px;
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
+    /* 得分显示 */
+    #ai-score-display, #player-score-display {
+        position: static;
+        margin: 10px 0;
     }
 }
