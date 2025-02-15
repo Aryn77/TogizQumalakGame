@@ -6,6 +6,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     rulesBtn.onclick = function() {
         rulesModal.style.display = "block";
+        // 立即更新规则内容
+        updateTexts();
     }
 
     closeBtn.onclick = function() {
@@ -17,6 +19,11 @@ document.addEventListener("DOMContentLoaded", function () {
             rulesModal.style.display = "none";
         }
     }
+
+    // 防止移动端滑动穿透
+    rulesModal.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+    }, { passive: false });
 
     // 初始化棋盘，18个坑，每个坑9颗棋子
     let board = new Array(18).fill(9);
