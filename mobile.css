@@ -1,72 +1,204 @@
-<!DOCTYPE html>
-<html lang="zh">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="托古兹库玛拉克 - 传统哈萨克棋类游戏">
-    <title>托古兹库玛拉克 | Togyz Kumalak</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
-    <link rel="stylesheet" href="mobile.css">
-    
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MVFNHXRW1G"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-MVFNHXRW1G');
-    </script>
-</head>
-<body>
-    <div id="rules-btn">规则</div>
-    
-    <div id="rules-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">×</span>
-            <h2>托古兹库玛拉克规则</h2>
-            <div class="rules-text"></div>
-        </div>
-    </div>
+:root {
+    --primary-color: #8B4513;
+    --secondary-color: #f5e6d3;
+    --text-color: #2c1810;
+    --hole-size: 35px;
+    --stone-size: 7px;
+}
 
-    <h1>托古兹库玛拉克</h1>
-    
-    <div id="board">
-        <div class="turn-indicator">玩家回合</div>
-        <div class="ai-side">
-            <div class="player-label">AI</div>
-            <div id="ai-row" class="row"></div>
-        </div>
-        
-        <div class="scores">
-            <div class="score-box">
-                <div class="score-label">AI得分</div>
-                <div class="score-value" id="ai-score">0</div>
-            </div>
-            <div class="score-box">
-                <div class="score-label">玩家得分</div>
-                <div class="score-value" id="player-score">0</div>
-            </div>
-        </div>
-        
-        <div class="player-side">
-            <div id="player-row" class="row"></div>
-            <div class="player-label">玩家</div>
-        </div>
-    </div>
+body {
+    margin: 0;
+    padding: 5px;
+    font-family: Arial, sans-serif;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    max-width: 430px;
+    margin: 0 auto;
+}
 
-    <div id="win-modal" class="modal">
-        <div class="modal-content win-content">
-            <h2 id="win-message"></h2>
-            <button id="restart-btn">再来一局</button>
-        </div>
-    </div>
+h1 {
+    text-align: center;
+    font-size: 20px;
+    margin: 5px 0;
+}
 
-    <div class="language-switcher">
-        <button data-lang="zh">中文</button>
-        <button data-lang="en">English</button>
-        <button data-lang="kk">Қазақша</button>
-    </div>
+#board {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 5px;
+}
 
-    <script src="mobile.js"></script>
-</body>
-</html> 
+.turn-indicator {
+    text-align: center;
+    padding: 5px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 5px;
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 0;
+    padding: 0 10px;
+}
+
+.hole {
+    width: var(--hole-size);
+    height: var(--hole-size);
+    border-radius: 50%;
+    background: var(--primary-color);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding: 3px;
+    margin: 0;
+}
+
+.stone {
+    width: var(--stone-size);
+    height: var(--stone-size);
+    background: var(--secondary-color);
+    border-radius: 50%;
+    margin: 1px;
+}
+
+.scores {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 20px;
+}
+
+.score-box {
+    text-align: center;
+    padding: 8px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 5px;
+    width: 40%;
+    font-size: 14px;
+}
+
+.player-label {
+    text-align: center;
+    margin: 3px 0;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+#rules-btn {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    padding: 8px 15px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 5px;
+    border: none;
+    font-size: 14px;
+    z-index: 100;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+}
+
+.modal-content {
+    background: var(--secondary-color);
+    margin: 15% auto;
+    padding: 20px;
+    width: 85%;
+    border-radius: 10px;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.language-switcher {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    display: flex;
+    gap: 3px;
+}
+
+.language-switcher button {
+    padding: 5px 10px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+/* 添加获胜提示框样式 */
+.win-content {
+    text-align: center;
+    padding: 30px;
+}
+
+.win-content h2 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+#restart-btn {
+    padding: 10px 25px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#restart-btn:hover {
+    opacity: 0.9;
+}
+
+/* 自适应布局 */
+@media screen and (max-width: 430px) {
+    #board {
+        width: 100%;
+        padding: 5px;
+    }
+
+    .hole {
+        width: 30px; /* 调整坑的大小 */
+        height: 30px;
+    }
+
+    .stone {
+        width: 6px; /* 调整棋子的大小 */
+        height: 6px;
+    }
+
+    .score-box {
+        width: 45%; /* 调整得分框的宽度 */
+    }
+
+    .turn-indicator {
+        font-size: 14px; /* 调整字体大小 */
+    }
+
+    h1 {
+        font-size: 20px; /* 调整标题字体大小 */
+    }
+} 
