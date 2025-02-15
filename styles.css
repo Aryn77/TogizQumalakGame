@@ -580,7 +580,7 @@ h2 {
     }
 
     h1::before, h1::after {
-        display: none;  /* 移除装饰 */
+        display: none;
     }
 
     #board {
@@ -588,17 +588,17 @@ h2 {
         max-width: 400px;
         padding: 20px 10px;
         margin: 10px auto;
-        border-width: 8px;  /* 减小边框宽度 */
+        border-width: 8px;
     }
 
     .row {
-        gap: 8px;  /* 减小间距 */
+        gap: 8px;
         margin: 15px 0;
     }
 
     .hole {
         width: 38px;
-        height: 70px;  /* 减小高度 */
+        height: 70px;
         padding: 5px;
         border-width: 1px;
     }
@@ -628,10 +628,9 @@ h2 {
     }
 
     .player-indicator {
-        display: none;  /* 移除玩家标识 */
+        display: none;
     }
 
-    /* 语言切换按钮 */
     .language-switcher {
         position: fixed;
         top: 10px;
@@ -645,7 +644,6 @@ h2 {
         font-size: 12px;
     }
 
-    /* 规则按钮 */
     #rules-btn {
         position: fixed;
         bottom: 15px;
@@ -654,7 +652,6 @@ h2 {
         font-size: 14px;
     }
 
-    /* 得分显示 */
     #ai-score-display, #player-score-display {
         position: static;
         margin: 10px 0;
