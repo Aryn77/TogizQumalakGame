@@ -102,15 +102,20 @@
     
     <div id="rules-modal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <span class="close">×</span>
             <h2>托古兹库玛拉克规则</h2>
-            <div class="rules-text">
-                <!-- 规则内容会通过JavaScript动态更新 -->
-            </div>
+            <div class="rules-text"></div>
         </div>
     </div>
 
-    <h1>Toguz Kumalak</h1>
+    <div class="lang-container">
+        <button data-lang="zh">中文</button>
+        <button data-lang="en">English</button>
+        <button data-lang="kk">Қазақша</button>
+    </div>
+
+    <h1>托古兹库玛拉克</h1>
+    
     <div id="scores">
         <p>玩家得分: <span id="player-score">0</span></p>
         <p>AI 得分: <span id="ai-score">0</span></p>
@@ -136,7 +141,7 @@
     <div id="win-modal" class="modal">
         <div class="modal-content win-content">
             <h2 id="win-message"></h2>
-            <button id="restart-btn">重新开始</button>
+            <button id="restart-btn">再来一局</button>
         </div>
     </div>
     <script src="script.js"></script>
