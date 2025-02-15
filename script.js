@@ -131,6 +131,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         
         dropStone();
+
+        if (player === "player") {
+            // 让 AI 从玩家的移动中学习
+            const reward = playerScore - oldPlayerScore;
+            aiLearner.updateQValue(oldState, startIndex, -reward, board); // 使用负奖励，因为这是对手的移动
+        }
     }
 
     // 检查吃子函数
@@ -155,22 +161,32 @@ document.addEventListener("DOMContentLoaded", function () {
         let aiEmpty = board.slice(9, 18).every(x => x === 0);
         if (playerEmpty || aiEmpty) {
             alert(`游戏结束！玩家得分：${playerScore}，AI得分：${aiScore}`);
+            return true;
         }
+        return false;
     }
 
     // AI移动函数
     function aiMove() {
-        let bestIndex = -1;
-        let maxStones = 0;
-        // 修正AI选择规则：从左往右找最多棋子的坑
-        for (let i = 9; i < 18; i++) {
-            if (board[i] > maxStones) {
-                maxStones = board[i];
-                bestIndex = i;
-            }
-        }
-        if (bestIndex!== -1) {
-            distributeStones(bestIndex, "ai");
+        // 保存移动前的状态
+        const oldState = [...board];
+        const oldScore = aiScore;
+        
+        // 使用Q-learning选择动作
+        const action = aiLearner.chooseAction(board);
+        
+        // 执行移动
+        distributeStones(action, "ai");
+        
+        // 计算奖励（基于得分变化）
+        const reward = aiScore - oldScore;
+        
+        // 更新Q值
+        aiLearner.updateQValue(oldState, action, reward, board);
+        
+        // 每局结束时保存学习结果
+        if (checkGameOver()) {
+            saveAIProgress();
         }
     }
 
@@ -299,27 +315,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 创建 AI 学习实例
     const aiLearner = new QLearn();
-
-    // 修改 aiMove 函数
-    function aiMove() {
-        // 保存移动前的状态
-        const oldState = [...board];
-        
-        // 使用Q-learning选择动作
-        const action = aiLearner.chooseAction(board);
-        
-        // 执行移动
-        distributeStones(action, "ai");
-        
-        // 计算奖励（可以基于得分变化）
-        const reward = aiScore - oldAiScore;
-        
-        // 更新Q值
-        aiLearner.updateQValue(oldState, action, reward, board);
-        
-        // 保存当前得分用于下次计算奖励
-        oldAiScore = aiScore;
-    }
 
     // 添加变量跟踪上一次得分
     let oldAiScore = 0;
@@ -487,21 +482,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return allEmpty;
     }
 
-    // 添加训练按钮
-    const trainButton = document.createElement('button');
-    trainButton.textContent = '训练AI (50局)';
-    trainButton.style.position = 'fixed';
-    trainButton.style.top = '20px';
-    trainButton.style.right = '20px';
-    trainButton.style.padding = '10px 20px';
-    trainButton.style.background = '#8B4513';
-    trainButton.style.color = '#fff';
-    trainButton.style.border = 'none';
-    trainButton.style.borderRadius = '5px';
-    trainButton.style.cursor = 'pointer';
-    trainButton.onclick = () => trainAI(50);
-    document.body.appendChild(trainButton);
-
     // 添加语言配置
     const translations = {
         zh: {
@@ -642,9 +622,6 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // 更新回合指示器
         updateTurnIndicator();
-        
-        // 更新训练按钮
-        trainButton.textContent = t.trainAI;
     }
 
     // 切换语言
