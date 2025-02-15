@@ -171,4 +171,34 @@ h1 {
 
 #restart-btn:hover {
     opacity: 0.9;
+}
+
+/* 自适应布局 */
+@media screen and (max-width: 430px) {
+    #board {
+        width: 100%;
+        padding: 5px;
+    }
+
+    .hole {
+        width: 30px; /* 调整坑的大小 */
+        height: 30px;
+    }
+
+    .stone {
+        width: 6px; /* 调整棋子的大小 */
+        height: 6px;
+    }
+
+    .score-box {
+        width: 45%; /* 调整得分框的宽度 */
+    }
+
+    .turn-indicator {
+        font-size: 14px; /* 调整字体大小 */
+    }
+
+    h1 {
+        font-size: 20px; /* 调整标题字体大小 */
+    }
 } 
