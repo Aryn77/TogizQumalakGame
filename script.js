@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let stones = board[startIndex];
         let currentIndex = startIndex;
 
-        // 定义 oldState 和 oldPlayerScore
+        // 定义 oldState
         const oldState = [...board]; // 在这里获取当前棋盘状态
         const oldPlayerScore = playerScore; // 在这里获取当前玩家得分
 
@@ -166,10 +166,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 // 检查得分情况
                 if (!checkScore()) {
                     isPlayerTurn = !isPlayerTurn;
-                renderBoard();
+                    renderBoard();
                     
-                if (!isPlayerTurn) {
-                    setTimeout(aiMove, 1000);
+                    if (!isPlayerTurn) {
+                        setTimeout(aiMove, 1000);
                     }
                 }
                 
