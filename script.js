@@ -9,24 +9,32 @@ if (isMobile()) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    // 在现有代码的开头添加以下内容
+    // 确保所有DOM元素都存在
     const rulesBtn = document.getElementById("rules-btn");
     const rulesModal = document.getElementById("rules-modal");
     const closeBtn = document.querySelector(".close");
+    const trainBtn = document.createElement('button');
 
-    rulesBtn.onclick = function() {
-        rulesModal.style.display = "block";
-        // 立即更新规则内容
-        updateTexts();
-    }
+    // 添加训练按钮
+    trainBtn.textContent = '训练AI (50局)';
+    trainBtn.className = 'train-button';
+    trainBtn.onclick = () => trainAI(50);
+    document.body.appendChild(trainBtn);
 
-    closeBtn.onclick = function() {
-        rulesModal.style.display = "none";
-    }
+    if (rulesBtn && rulesModal && closeBtn) {
+        rulesBtn.onclick = function() {
+            rulesModal.style.display = "block";
+            updateTexts();
+        }
 
-    window.onclick = function(event) {
-        if (event.target == rulesModal) {
+        closeBtn.onclick = function() {
             rulesModal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == rulesModal) {
+                rulesModal.style.display = "none";
+            }
         }
     }
 
@@ -230,12 +238,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 更新回合指示器
     function updateTurnIndicator() {
-        const turnIndicator = document.querySelector('.white-turn');
-        turnIndicator.textContent = isPlayerTurn ? "玩家回合" : "AI回合";
-        turnIndicator.style.background = isPlayerTurn ? 
-            'linear-gradient(145deg, #f5e6d3, #f0d9b5)' : 
-            'linear-gradient(145deg, #8B4513, #654321)';
-        turnIndicator.style.color = isPlayerTurn ? '#2c1810' : '#f5f5f5';
+        try {
+            const t = translations[currentLang];
+            const turnIndicator = document.querySelector('.white-turn');
+            if (turnIndicator) {
+                turnIndicator.textContent = isPlayerTurn ? t.playerTurn : t.aiTurn;
+            }
+        } catch (error) {
+            console.error('Error updating turn indicator:', error);
+        }
     }
 
     // 在updateScoreDisplay函数中调用
@@ -641,53 +652,56 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 更新界面文本
     function updateTexts() {
-        const t = translations[currentLang];
-        
-        // 更新标题
-        document.querySelector('h1').textContent = t.title;
-        
-        // 更新规则按钮
-        document.getElementById('rules-btn').textContent = t.rules;
-        
-        // 更新规则模态框
-        document.querySelector('.modal-content h2').textContent = t.rulesTitle;
-        const rulesList = document.querySelector('.rules-text');
-        rulesList.innerHTML = t.rulesContent.map(rule => `<p>${rule}</p>`).join('');
-        
-        // 更新玩家标识
-        document.querySelector('.player-indicator:not(.ai-indicator)').textContent = t.player;
-        document.querySelector('.ai-indicator').textContent = t.ai;
-        
-        // 更新得分区域
-        document.querySelectorAll('.score-container span').forEach(span => {
-            if (currentLang === 'kk') {
-                // 哈萨克语使用 Қазан
-                span.textContent = span.textContent.includes('AI') ? 
-                    `${t.ai} ${t.score}:` : 
-                    `${t.player} ${t.score}:`;
-            } else {
-                // 其他语言保持原样
-                span.textContent = span.textContent.includes('AI') ? 
-                    `${t.ai}${t.score}:` : 
-                    `${t.player}${t.score}:`;
-            }
-        });
-        
-        // 更新回合指示器
-        updateTurnIndicator();
+        try {
+            const t = translations[currentLang];
+            
+            // 更新标题
+            const title = document.querySelector('h1');
+            if (title) title.textContent = t.title;
+            
+            // 更新规则按钮
+            const rulesBtn = document.getElementById('rules-btn');
+            if (rulesBtn) rulesBtn.textContent = t.rules;
+            
+            // 更新规则模态框
+            const modalTitle = document.querySelector('.modal-content h2');
+            const rulesList = document.querySelector('.rules-text');
+            if (modalTitle) modalTitle.textContent = t.rulesTitle;
+            if (rulesList) rulesList.innerHTML = t.rulesContent.map(rule => `<p>${rule}</p>`).join('');
+            
+            // 更新玩家标识
+            const playerIndicator = document.querySelector('.player-indicator:not(.ai-indicator)');
+            const aiIndicator = document.querySelector('.ai-indicator');
+            if (playerIndicator) playerIndicator.textContent = t.player;
+            if (aiIndicator) aiIndicator.textContent = t.ai;
+            
+            // 更新得分区域
+            const scoreContainers = document.querySelectorAll('.score-container span');
+            scoreContainers.forEach(span => {
+                if (span) {
+                    if (currentLang === 'kk') {
+                        span.textContent = span.textContent.includes('AI') ? 
+                            `${t.ai} ${t.score}:` : 
+                            `${t.player} ${t.score}:`;
+                    } else {
+                        span.textContent = span.textContent.includes('AI') ? 
+                            `${t.ai}${t.score}:` : 
+                            `${t.player}${t.score}:`;
+                    }
+                }
+            });
+            
+            // 更新回合指示器
+            updateTurnIndicator();
+        } catch (error) {
+            console.error('Error updating texts:', error);
+        }
     }
 
     // 切换语言
     function changeLanguage(lang) {
         currentLang = lang;
         updateTexts();
-    }
-
-    // 修改updateTurnIndicator函数
-    function updateTurnIndicator() {
-        const t = translations[currentLang];
-        const turnIndicator = document.querySelector('.white-turn');
-        turnIndicator.textContent = isPlayerTurn ? t.playerTurn : t.aiTurn;
     }
 
     // 在DOMContentLoaded事件中初始化语言选择器
