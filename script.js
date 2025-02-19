@@ -79,6 +79,11 @@ function renderBoard() {
 
 // 创建棋坑函数
 function createHole(i) {
+    if (board === null || board === undefined) {
+        console.error('Board is not initialized');
+        return;
+    }
+
     const hole = document.createElement("div");
     hole.classList.add("hole");
     hole.dataset.index = i;
@@ -88,10 +93,12 @@ function createHole(i) {
     stonesContainer.className = "stones-container";
     
     // 生成棋子
-    for (let j = 0; j < board[i]; j++) {
-        const stone = document.createElement("div");
-        stone.classList.add("stone");
-        stonesContainer.appendChild(stone);
+    if (board[i] !== undefined) {
+        for (let j = 0; j < board[i]; j++) {
+            const stone = document.createElement("div");
+            stone.classList.add("stone");
+            stonesContainer.appendChild(stone);
+        }
     }
     
     hole.appendChild(stonesContainer);
