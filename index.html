@@ -1,136 +1,557 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="托古兹库玛拉克 - 传统哈萨克棋类游戏">
-    <title>托古兹库玛拉克 | Togyz Kumalak</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
-    <link rel="stylesheet" href="styles.css">
-    
-    <style>
-        /* 移动端适配 */
-        @media screen and (max-width: 768px) {
-            #board {
-                transform: scale(0.8);
-                margin: 10px auto;
-            }
-            
-            .hole {
-                width: 40px;
-                height: 40px;
-                margin: 5px;
-            }
-            
-            .stone {
-                width: 8px;
-                height: 8px;
-            }
-            
-            .score-container {
-                margin: 10px 0;
-            }
-            
-            /* 规则按钮位置调整 */
-            #rules-btn {
-                top: auto;
-                bottom: 20px;
-                right: 20px;
-                padding: 15px 25px;
-                font-size: 16px;
-                z-index: 1001;
-            }
-            
-            /* 语言选择按钮调整 */
-            .lang-container {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 5px;
-            }
-            
-            .lang-container button {
-                padding: 8px 15px;
-                font-size: 14px;
-            }
-        }
-        
-        /* 规则模态框样式优化 */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1002;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.7);
-        }
-        
-        .modal-content {
-            background-color: #f5e6d3;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #8B4513;
-            width: 80%;
-            max-width: 500px;
-            border-radius: 10px;
-            position: relative;
-        }
-        
-        .close {
-            position: absolute;
-            right: 15px;
-            top: 10px;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #8B4513;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тоғыз Құмалақ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="lang-container"></div>
-    <button id="rules-btn">规则说明</button>
-    
-    <div id="rules-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>托古兹库玛拉克规则</h2>
-            <div class="rules-text">
-                <!-- 规则内容会通过JavaScript动态更新 -->
-            </div>
+
+<!-- ════ GLOBAL CONTROLS ════ -->
+<div id="g-controls">
+  <div class="lang-group">
+    <button class="lang-btn active" data-lang="en">EN</button>
+    <button class="lang-btn" data-lang="zh">中文</button>
+    <button class="lang-btn" data-lang="kk">ҚАЗ</button>
+  </div>
+  <button id="g-rules-btn" class="g-rules-btn">
+    <span>☰</span><span data-i18n="rules">Rules</span>
+  </button>
+</div>
+
+<!-- ════ RULES MODAL ════ -->
+<div id="rules-modal" class="modal-overlay">
+  <div class="modal-box rules-box">
+    <button class="modal-close" id="close-rules">✕</button>
+    <div class="oyu-strip"></div>
+    <div class="modal-inner">
+      <div class="modal-ornament">✦</div>
+      <h2 class="modal-title" data-i18n="rulesTitle">Rules</h2>
+      <div class="rules-list" id="rules-list"></div>
+    </div>
+    <div class="oyu-strip"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN: AUTH
+════════════════════════════════════ -->
+<div id="screen-auth" class="screen active">
+  <div class="auth-bg">
+    <div class="auth-pattern-overlay"></div>
+  </div>
+
+  <div class="auth-scroll">
+    <div class="auth-wrap">
+
+      <!-- Logo -->
+      <div class="auth-logo">
+        <div class="auth-oyu-row">
+          <div class="oyu-horn left"></div>
+          <div class="oyu-star">✦</div>
+          <div class="oyu-horn right"></div>
         </div>
+        <h1 class="auth-title">Тоғыз Құмалақ</h1>
+        <p class="auth-sub">Traditional Kazakh Board Game</p>
+      </div>
+
+      <!-- Auth Card -->
+      <div class="auth-card">
+        <div class="oyu-strip"></div>
+
+        <!-- TABS -->
+        <div class="auth-tabs" id="auth-tabs">
+          <button class="auth-tab active" id="tab-login-btn" data-i18n="loginTab">Login</button>
+          <button class="auth-tab" id="tab-reg-btn" data-i18n="registerTab">Register</button>
+        </div>
+
+        <!-- ── LOGIN ── -->
+        <div class="tab-pane active" id="pane-login">
+          <div class="field-grp">
+            <label class="f-label" data-i18n="gameName">Game Name</label>
+            <input id="l-name" class="f-input" type="text" autocomplete="username" maxlength="20">
+          </div>
+          <div class="field-grp">
+            <label class="f-label" data-i18n="password">Password</label>
+            <div class="pw-wrap">
+              <input id="l-pass" class="f-input" type="password" autocomplete="current-password">
+              <button class="pw-eye" id="l-eye" type="button">👁</button>
+            </div>
+          </div>
+          <p class="form-err" id="l-err"></p>
+          <button class="btn-red full" id="btn-login" data-i18n="loginBtn">Login</button>
+          <div class="auth-links">
+            <span data-i18n="noAccount">No account?</span>
+            <button class="lnk" id="go-reg" data-i18n="registerTab">Register</button>
+          </div>
+          <div class="auth-links">
+            <button class="lnk" id="go-forgot" data-i18n="forgotPassword">Forgot password?</button>
+          </div>
+        </div>
+
+        <!-- ── REGISTER STEP 1: name + email ── -->
+        <div class="tab-pane" id="pane-reg">
+          <div class="field-grp">
+            <label class="f-label" data-i18n="gameName">Game Name</label>
+            <input id="r-name" class="f-input" type="text" autocomplete="username" maxlength="20">
+          </div>
+          <div class="field-grp">
+            <label class="f-label" data-i18n="email">Email</label>
+            <input id="r-email" class="f-input" type="email" autocomplete="email">
+          </div>
+          <p class="form-err" id="r-err"></p>
+          <button class="btn-red full" id="btn-send-reg" data-i18n="sendCode">Send Verification Code</button>
+          <div class="auth-links">
+            <span data-i18n="hasAccount">Have account?</span>
+            <button class="lnk" id="go-login" data-i18n="loginTab">Login</button>
+          </div>
+        </div>
+
+        <!-- ── VERIFY (register) ── -->
+        <div class="tab-pane" id="pane-verify">
+          <div class="step-icon">📧</div>
+          <h3 class="step-title" data-i18n="verifyTitle">Check your email</h3>
+          <p class="step-desc" id="v-desc">Code sent to your email</p>
+
+          <div class="demo-banner" id="v-demo">
+            <span class="demo-tag" data-i18n="demoTag">DEMO</span>
+            <span data-i18n="demoNote">No email server configured. Your code:</span>
+            <strong class="demo-code" id="v-demo-code">——</strong>
+          </div>
+
+          <label class="f-label center-lbl" data-i18n="enterCode">Enter 6-digit code</label>
+          <div class="code-row" id="v-code-row">
+            <input class="cbox" maxlength="1" inputmode="numeric"><input class="cbox" maxlength="1" inputmode="numeric">
+            <input class="cbox" maxlength="1" inputmode="numeric"><input class="cbox" maxlength="1" inputmode="numeric">
+            <input class="cbox" maxlength="1" inputmode="numeric"><input class="cbox" maxlength="1" inputmode="numeric">
+          </div>
+          <p class="form-err" id="v-err"></p>
+          <div class="timer-row">
+            <span data-i18n="codeExpires">Expires in</span>
+            <span class="timer" id="v-timer">10:00</span>
+          </div>
+          <button class="btn-red full" id="btn-verify" data-i18n="verifyBtn">Verify Code</button>
+          <div class="auth-links">
+            <span data-i18n="noCode">Didn't get it?</span>
+            <button class="lnk" id="btn-resend-reg" data-i18n="resend">Resend</button>
+          </div>
+          <button class="lnk back-lnk" id="v-back">← <span data-i18n="back">Back</span></button>
+        </div>
+
+        <!-- ── REGISTER STEP 3: set password ── -->
+        <div class="tab-pane" id="pane-set-pass">
+          <div class="step-icon">✅</div>
+          <h3 class="step-title" data-i18n="identityVerified">Email Verified!</h3>
+          <p class="step-desc" data-i18n="nowSetPass">Now create your password</p>
+          <div class="field-grp">
+            <label class="f-label" data-i18n="password">Password</label>
+            <div class="pw-wrap">
+              <input id="sp-pass" class="f-input" type="password" autocomplete="new-password">
+              <button class="pw-eye" id="sp-eye" type="button">👁</button>
+            </div>
+          </div>
+          <div class="field-grp">
+            <label class="f-label" data-i18n="confirmPassword">Confirm Password</label>
+            <input id="sp-pass2" class="f-input" type="password" autocomplete="new-password">
+          </div>
+          <p class="form-err" id="sp-err"></p>
+          <button class="btn-red full" id="btn-create-acc" data-i18n="registerBtn">Create Account</button>
+        </div>
+
+        <!-- ── FORGOT: name + email ── -->
+        <div class="tab-pane" id="pane-forgot">
+          <div class="step-icon">🔑</div>
+          <h3 class="step-title" data-i18n="forgotTitle">Reset Password</h3>
+          <p class="step-desc" data-i18n="forgotDesc">Enter your game name and registered email</p>
+          <div class="field-grp">
+            <label class="f-label" data-i18n="gameName">Game Name</label>
+            <input id="fg-name" class="f-input" type="text" maxlength="20">
+          </div>
+          <div class="field-grp">
+            <label class="f-label" data-i18n="email">Email</label>
+            <input id="fg-email" class="f-input" type="email">
+          </div>
+          <p class="form-err" id="fg-err"></p>
+          <button class="btn-red full" id="btn-send-reset" data-i18n="sendCode">Send Reset Code</button>
+          <button class="lnk back-lnk" id="fg-back">← <span data-i18n="back">Back</span></button>
+        </div>
+
+        <!-- ── RESET VERIFY ── -->
+        <div class="tab-pane" id="pane-reset-verify">
+          <div class="step-icon">📧</div>
+          <h3 class="step-title" data-i18n="verifyTitle">Check your email</h3>
+          <p class="step-desc" id="rv-desc">Reset code sent</p>
+
+          <div class="demo-banner" id="rv-demo">
+            <span class="demo-tag" data-i18n="demoTag">DEMO</span>
+            <span data-i18n="demoNote">No email server configured. Your code:</span>
+            <strong class="demo-code" id="rv-demo-code">——</strong>
+          </div>
+
+          <label class="f-label center-lbl" data-i18n="enterCode">Enter 6-digit code</label>
+          <div class="code-row" id="rv-code-row">
+            <input class="cbox" maxlength="1" inputmode="numeric"><input class="cbox" maxlength="1" inputmode="numeric">
+            <input class="cbox" maxlength="1" inputmode="numeric"><input class="cbox" maxlength="1" inputmode="numeric">
+            <input class="cbox" maxlength="1" inputmode="numeric"><input class="cbox" maxlength="1" inputmode="numeric">
+          </div>
+          <p class="form-err" id="rv-err"></p>
+          <div class="timer-row">
+            <span data-i18n="codeExpires">Expires in</span>
+            <span class="timer" id="rv-timer">10:00</span>
+          </div>
+          <button class="btn-red full" id="btn-reset-verify" data-i18n="verifyBtn">Verify Code</button>
+          <div class="auth-links">
+            <span data-i18n="noCode">Didn't get it?</span>
+            <button class="lnk" id="btn-resend-reset" data-i18n="resend">Resend</button>
+          </div>
+          <button class="lnk back-lnk" id="rv-back">← <span data-i18n="back">Back</span></button>
+        </div>
+
+        <!-- ── RESET SET PASSWORD ── -->
+        <div class="tab-pane" id="pane-reset-pass">
+          <div class="step-icon">🛡</div>
+          <h3 class="step-title" data-i18n="resetTitle">New Password</h3>
+          <div class="field-grp">
+            <label class="f-label" data-i18n="newPassword">New Password</label>
+            <div class="pw-wrap">
+              <input id="rp-pass" class="f-input" type="password" autocomplete="new-password">
+              <button class="pw-eye" id="rp-eye" type="button">👁</button>
+            </div>
+          </div>
+          <div class="field-grp">
+            <label class="f-label" data-i18n="confirmPassword">Confirm Password</label>
+            <input id="rp-pass2" class="f-input" type="password" autocomplete="new-password">
+          </div>
+          <p class="form-err" id="rp-err"></p>
+          <button class="btn-red full" id="btn-do-reset" data-i18n="resetBtn">Reset Password</button>
+        </div>
+
+        <div class="oyu-strip"></div>
+      </div><!-- auth-card -->
+    </div><!-- auth-wrap -->
+  </div><!-- auth-scroll -->
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN: LOBBY
+════════════════════════════════════ -->
+<div id="screen-lobby" class="screen">
+  <header class="top-bar">
+    <div class="top-logo">✦ Тоғыз Құмалақ</div>
+    <div class="top-right">
+      <div class="top-user">
+        <div class="av-sm" id="lobby-avatar">A</div>
+        <span id="lobby-username">Player</span>
+      </div>
+      <button class="btn-outline-sm" id="btn-logout" data-i18n="logout">Logout</button>
+    </div>
+  </header>
+  <div class="oyu-topbar"></div>
+
+  <div class="lobby-body">
+    <div class="lobby-hero">
+      <div class="hero-ornament">❧</div>
+      <h2 class="hero-title" data-i18n="chooseMode">Choose Your Battle</h2>
+      <p class="hero-sub" data-i18n="chooseModeDesc">Select a game mode to begin</p>
     </div>
 
-    <h1>Toguz Kumalak</h1>
-    <div id="scores">
-        <p>玩家得分: <span id="player-score">0</span></p>
-        <p>AI 得分: <span id="ai-score">0</span></p>
-        <p><strong id="turn">玩家回合</strong></p>
-    </div>
-    <div id="board">
-        <div class="white-turn">Current Turn: Player</div>
-        <div class="player-indicator ai-indicator">AI</div>
-        <div id="ai-row" class="row"></div>
-        <div class="score-container">
-            <span>AI得分:</span>
-            <div class="score-stones" id="ai-score-stones"></div>
-            <div class="score-value">0</div>
+    <div class="mode-cards">
+      <div class="mode-card" id="mode-ai">
+        <div class="mc-oyu-top"></div>
+        <div class="mc-body">
+          <div class="mc-icon ai-icon">⚙</div>
+          <h3 class="mc-name" data-i18n="vsAI">vs AI</h3>
+          <p class="mc-desc" data-i18n="vsAIDesc">Challenge the machine in a single-player duel. Sharpen your strategy.</p>
+          <div class="mc-tag" data-i18n="singlePlayer">Single Player</div>
+          <button class="btn-red mc-btn" data-i18n="playNow">Play Now →</button>
         </div>
-        <div class="score-container">
-            <span>玩家得分:</span>
-            <div class="score-stones" id="player-score-stones"></div>
-            <div class="score-value">0</div>
+        <div class="mc-oyu-bot"></div>
+      </div>
+
+      <div class="mode-sep">
+        <div class="sep-line"></div>
+        <div class="sep-gem">◆</div>
+        <div class="sep-line"></div>
+      </div>
+
+      <div class="mode-card pvp-card" id="mode-pvp">
+        <div class="mc-oyu-top blue-oyu"></div>
+        <div class="mc-body">
+          <div class="mc-icon pvp-icon">♟</div>
+          <h3 class="mc-name" data-i18n="vsPlayer">vs Player</h3>
+          <p class="mc-desc" data-i18n="vsPlayerDesc">Create or join a room. Invite friends or find a random rival.</p>
+          <div class="mc-tag blue-tag" data-i18n="multiplayer">Multiplayer</div>
+          <button class="btn-cobalt mc-btn" data-i18n="findMatch">Find Match →</button>
         </div>
-        <div id="player-row" class="row"></div>
-        <div class="player-indicator">玩家</div>
+        <div class="mc-oyu-bot blue-oyu"></div>
+      </div>
     </div>
-    <div id="win-modal" class="modal">
-        <div class="modal-content win-content">
-            <h2 id="win-message"></h2>
-            <button id="restart-btn">重新开始</button>
+
+    <div class="lobby-stats">
+      <span class="online-dot"></span>
+      <span id="stat-online">1</span> <span data-i18n="online">online</span>
+      <span class="stat-sep">·</span>
+      <span id="stat-rooms">0</span> <span data-i18n="openRooms">open rooms</span>
+    </div>
+  </div>
+  <div class="oyu-topbar"></div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN: ROOMS
+════════════════════════════════════ -->
+<div id="screen-rooms" class="screen">
+  <header class="top-bar">
+    <button class="btn-back" id="rooms-back">← <span data-i18n="back">Back</span></button>
+    <div class="top-logo" data-i18n="roomBrowser">Room Browser</div>
+    <div class="top-user">
+      <div class="av-sm" id="rooms-avatar">A</div>
+      <span id="rooms-username">Player</span>
+    </div>
+  </header>
+  <div class="oyu-topbar"></div>
+
+  <div class="rooms-body">
+    <div class="qa-grid">
+      <button class="qa-card" id="btn-create-room">
+        <span class="qa-ico">＋</span>
+        <div>
+          <div class="qa-name" data-i18n="createRoom">Create Room</div>
+          <div class="qa-hint" data-i18n="createRoomDesc">Set password, invite friends</div>
         </div>
+      </button>
+      <button class="qa-card qa-blue" id="btn-quick-match">
+        <span class="qa-ico">⚡</span>
+        <div>
+          <div class="qa-name" data-i18n="quickMatch">Quick Match</div>
+          <div class="qa-hint" data-i18n="quickMatchDesc">Find a random opponent</div>
+        </div>
+      </button>
     </div>
-    <script src="script.js"></script>
+
+    <div class="rooms-panel">
+      <div class="rooms-head">
+        <h3 data-i18n="openRoomsList">Open Rooms</h3>
+        <button class="btn-refresh" id="btn-refresh">↻</button>
+      </div>
+      <div class="rooms-list" id="rooms-list">
+        <div class="rooms-empty" id="rooms-empty">
+          <p>🏚</p><p data-i18n="noRooms">No open rooms yet. Create one!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create room modal -->
+  <div class="modal-overlay" id="modal-create">
+    <div class="modal-box">
+      <div class="oyu-strip"></div>
+      <div class="modal-inner">
+        <button class="modal-close" id="close-create">✕</button>
+        <div class="modal-ornament">✦</div>
+        <h2 class="modal-title" data-i18n="createRoom">Create Room</h2>
+        <div class="field-grp"><label class="f-label" data-i18n="roomName">Room Name</label><input id="cr-name" class="f-input" maxlength="24"></div>
+        <div class="field-grp"><label class="f-label"><span data-i18n="roomPassword">Password</span> <span class="opt-tag" data-i18n="optional">(optional)</span></label><input id="cr-pass" class="f-input" maxlength="16"></div>
+        <button class="btn-red full" id="btn-confirm-create" data-i18n="createRoomBtn">Create Room</button>
+      </div>
+      <div class="oyu-strip"></div>
+    </div>
+  </div>
+
+  <!-- Password modal -->
+  <div class="modal-overlay" id="modal-password">
+    <div class="modal-box">
+      <div class="oyu-strip"></div>
+      <div class="modal-inner">
+        <button class="modal-close" id="close-password">✕</button>
+        <div class="modal-ornament">🔒</div>
+        <h2 class="modal-title" data-i18n="passwordRequired">Password Required</h2>
+        <input id="join-pass" class="f-input" data-i18n-ph="enterPassword" placeholder="Enter password…">
+        <p class="form-err" id="pass-err"></p>
+        <button class="btn-red full" id="btn-confirm-join" data-i18n="joinRoom">Join Room</button>
+      </div>
+      <div class="oyu-strip"></div>
+    </div>
+  </div>
+
+  <!-- Quick match modal -->
+  <div class="modal-overlay" id="modal-qm">
+    <div class="modal-box qm-box">
+      <div class="oyu-strip"></div>
+      <div class="modal-inner" style="text-align:center;padding:32px 28px">
+        <div class="qm-spinner"><div class="qm-r r1"></div><div class="qm-r r2"></div><div class="qm-core">✦</div></div>
+        <h2 class="modal-title" data-i18n="searching">Searching…</h2>
+        <p class="step-desc" id="qm-status" data-i18n="lookingForOpponent">Looking for opponent</p>
+        <button class="btn-outline-sm" id="btn-cancel-qm" data-i18n="cancel">Cancel</button>
+      </div>
+      <div class="oyu-strip"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN: WAITING ROOM
+════════════════════════════════════ -->
+<div id="screen-waiting" class="screen">
+  <header class="top-bar">
+    <button class="btn-back" id="waiting-leave">← <span data-i18n="leave">Leave</span></button>
+    <div class="top-logo" id="w-room-name">Room</div>
+    <div class="room-pill" id="w-code-pill">XXXX</div>
+  </header>
+  <div class="oyu-topbar"></div>
+
+  <div class="waiting-body">
+    <div class="w-left">
+      <div class="w-card">
+        <div class="oyu-strip"></div>
+        <div class="w-card-inner">
+          <div class="w-card-title">
+            <span data-i18n="waitingPlayers">Players</span>
+            <span class="w-count" id="w-count">1/2</span>
+          </div>
+          <div class="w-slots">
+            <div class="w-slot" id="ws0">
+              <div class="w-av" id="wav0">?</div>
+              <div>
+                <div class="w-name" id="wn0">—</div>
+                <div class="w-role" data-i18n="waitingHost">Host</div>
+              </div>
+              <div class="w-dot ready" id="wd0"></div>
+            </div>
+            <div class="w-vs">⚔</div>
+            <div class="w-slot w-empty" id="ws1">
+              <div class="w-av empty-av">?</div>
+              <div>
+                <div class="w-name" data-i18n="waitingForPlayer">Waiting for player…</div>
+                <div class="w-role" data-i18n="waitingChallenger">Challenger</div>
+              </div>
+              <div class="w-dot" id="wd1"></div>
+            </div>
+          </div>
+
+          <div class="room-info">
+            <div class="ri"><span data-i18n="roomCode">Code</span><strong class="copy-code" id="ri-code">XXXX</strong></div>
+            <div class="ri" id="ri-pass-row"><span data-i18n="roomPassword">Pass</span><strong id="ri-pass">—</strong></div>
+            <div class="ri"><span data-i18n="roomStatus">Status</span><strong class="s-wait" id="ri-status" data-i18n="statusWaiting">Waiting…</strong></div>
+          </div>
+
+          <button class="btn-red full btn-start" id="btn-start-game" disabled data-i18n="startGame">Start Game</button>
+          <p class="wait-hint" id="wait-hint"></p>
+        </div>
+        <div class="oyu-strip"></div>
+      </div>
+    </div>
+
+    <div class="w-right">
+      <div class="chat-panel">
+        <div class="chat-hdr">💬 <span data-i18n="roomChat">Room Chat</span></div>
+        <div class="chat-msgs" id="w-msgs"></div>
+        <div class="chat-row">
+          <input class="chat-input" id="w-input" data-i18n-ph="sayHello" placeholder="Say hello…">
+          <button class="chat-send" id="w-send">↑</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN: GAME
+════════════════════════════════════ -->
+<div id="screen-game" class="screen">
+  <header class="game-bar">
+    <div class="gb-player" id="gb-top">
+      <div class="gb-av ai-av" id="gb-top-av">⚙</div>
+      <div class="gb-info">
+        <div class="gb-name" id="gb-top-name">AI</div>
+        <div class="gb-score"><span id="gb-top-score">0</span><span class="gb-pts" data-i18n="pts">pts</span></div>
+      </div>
+      <div class="gb-pip" id="pip-top"></div>
+    </div>
+    <div class="gb-center">
+      <div class="turn-pill" id="turn-pill">Your Turn</div>
+      <button class="btn-quit" id="btn-quit" data-i18n="quit">✕ Quit</button>
+    </div>
+    <div class="gb-player gb-right">
+      <div class="gb-pip" id="pip-bot"></div>
+      <div class="gb-info right-info">
+        <div class="gb-name" id="gb-bot-name">You</div>
+        <div class="gb-score"><span id="gb-bot-score">0</span><span class="gb-pts" data-i18n="pts">pts</span></div>
+      </div>
+      <div class="gb-av human-av" id="gb-bot-av">♟</div>
+    </div>
+  </header>
+  <div class="oyu-topbar game-oyu"></div>
+
+  <div class="game-layout">
+    <div class="board-col">
+      <!-- Top Kazhan -->
+      <div class="kazhan-bar">
+        <span class="kz-lbl" data-i18n="kazhan">Казан</span>
+        <div class="kz-stones" id="kz-top"></div>
+        <span class="kz-num" id="kz-top-n">0</span>
+      </div>
+
+      <!-- Board -->
+      <div class="board" id="game-board">
+        <div class="oyu-strip board-oyu"></div>
+        <div class="board-inner">
+          <div class="board-row ai-holes" id="ai-row"></div>
+          <div class="board-divider">
+            <div class="bd-line"></div><span class="bd-gem">✦</span><div class="bd-line"></div>
+          </div>
+          <div class="board-row player-holes" id="player-row"></div>
+        </div>
+        <div class="oyu-strip board-oyu"></div>
+      </div>
+
+      <!-- Bot Kazhan -->
+      <div class="kazhan-bar">
+        <span class="kz-lbl" data-i18n="kazhan">Казан</span>
+        <div class="kz-stones" id="kz-bot"></div>
+        <span class="kz-num" id="kz-bot-n">0</span>
+      </div>
+    </div>
+
+    <div class="chat-col" id="chat-col">
+      <div class="chat-hdr">💬 <span data-i18n="gameChat">Chat</span>
+        <button class="chat-collapse" id="chat-collapse">−</button>
+      </div>
+      <div class="chat-msgs" id="g-msgs"></div>
+      <div class="chat-row">
+        <input class="chat-input" id="g-input" data-i18n-ph="sayHello" placeholder="Message…">
+        <button class="chat-send" id="g-send">↑</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Win Overlay -->
+  <div class="win-overlay" id="win-overlay">
+    <div class="win-card">
+      <div class="oyu-strip"></div>
+      <div class="win-inner">
+        <div class="win-ornament">✦</div>
+        <div class="win-emoji" id="win-emoji">🏆</div>
+        <h2 class="win-title" id="win-title">You Win!</h2>
+        <div class="win-scores">
+          <div class="ws"><div class="ws-name" id="wn1">You</div><div class="ws-val" id="wv1">0</div></div>
+          <div class="ws-vs">vs</div>
+          <div class="ws"><div class="ws-name" id="wn2">AI</div><div class="ws-val" id="wv2">0</div></div>
+        </div>
+        <div class="win-btns">
+          <button class="btn-red full" id="btn-again" data-i18n="playAgain">Play Again</button>
+          <button class="btn-outline-sm" style="width:100%;margin-top:8px;padding:10px" id="btn-lobby" data-i18n="backToLobby">Back to Lobby</button>
+        </div>
+      </div>
+      <div class="oyu-strip"></div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
