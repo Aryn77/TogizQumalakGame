@@ -553,6 +553,9 @@ function doResetPass() {
 
 /* ──────────────────────────────────────────────
    LOBBY
+
+/* ──────────────────────────────────────────────
+   LOBBY
 ────────────────────────────────────────────── */
 function enterLobby() {
   qs('#lobby-avatar').textContent=S.username[0]?.toUpperCase()||'?';
@@ -585,157 +588,6 @@ function saveRoom(r){const rooms=getRooms();rooms[r.id]=r;saveRooms(rooms);}
 function deleteRoom(id){const rooms=getRooms();delete rooms[id];saveRooms(rooms);}
 function genRoomCode(){let c;do{c=Math.random().toString(36).substring(2,6).toUpperCase();}while(getRoom(c));return c;}
 function cleanRooms(){const rooms=getRooms(),now=Date.now();let ch=false;for(const[id,r]of Object.entries(rooms)){if(now-r.createdAt>30*60000){delete rooms[id];ch=true;}}if(ch)saveRooms(rooms);}
-
-function enterRooms(){
-  qs('#rooms-avatar').textContent=S.username[0]?.toUpperCase()||'?';
-  qs('#rooms-username').textContent=S.username;
-  applyI18n(); refreshList(); show('screen-rooms');
-}
-function bindRooms(){
-  qs('#rooms-back').addEventListener('click',enterLobby);
-  qs('#btn-refresh').addEventListener('click',refreshList);
-  qs('#btn-create-room').addEventListener('click',()=>{qs('#cr-name').value=S.username+"'s Room";qs('#cr-pass').value='';modal('modal-create',true);});
-  qs('#close-create').addEventListener('click',()=>modal('modal-create',false));
-  qs('#btn-confirm-create').addEventListener('click',doCreate);
-  qs('#close-password').addEventListener('click',()=>modal('modal-password',false));
-  qs('#btn-confirm-join').addEventListener('click',doJoinPW);
-  qs('#join-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doJoinPW();});
-  qs('#btn-quick-match').addEventListener('click',startQM);
-  qs('#btn-cancel-qm').addEventListener('click',cancelQM);
-  [qs('#modal-create'),qs('#modal-password')].forEach(m=>m?.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
-}
-function refreshList(){
-  cleanRooms();
-  const open=Object.values(getRooms()).filter(r=>r.status==='waiting');
-  const list=qs('#rooms-list'); list.querySelectorAll('.room-item').forEach(el=>el.remove());
-  qs('#rooms-empty').style.display=open.length?'none':'';
-  open.sort((a,b)=>b.createdAt-a.createdAt).forEach(room=>{
-    const el=document.createElement('div'); el.className='room-item';
-    el.innerHTML=`<div><div class="ri-name">${esc(room.name)} ${room.password?'🔒':''}</div><div class="ri-meta">${t('waitingHost')}: ${esc(room.creator)} · ${room.players.length}/2</div></div><button class="btn-join" data-id="${room.id}">${t('joinRoom')}</button>`;
-    el.querySelector('.btn-join').addEventListener('click',()=>tryJoin(room.id));
-    list.appendChild(el);
-  });
-  qs('#stat-rooms').textContent=open.length;
-}
-let pendingRoom=null;
-function tryJoin(id){
-  const room=getRoom(id); if(!room||room.status!=='waiting'){refreshList();return;}
-  if(room.players.length>=2){refreshList();return;}
-  if(room.password){pendingRoom=id;qs('#join-pass').value='';qs('#pass-err').textContent='';modal('modal-password',true);}
-  else joinRoom(id,'');
-}
-function doJoinPW(){
-  const pass=qs('#join-pass').value.trim(), room=getRoom(pendingRoom); if(!room)return;
-  if(room.password&&room.password!==pass){qs('#pass-err').textContent=t('wrongPassword');return;}
-  modal('modal-password',false); joinRoom(pendingRoom,pass);
-}
-function doCreate(){
-  const name=qs('#cr-name').value.trim()||S.username+"'s Room", pass=qs('#cr-pass').value.trim();
-  const room={id:genRoomCode(),name,password:pass||null,creator:S.username,creatorId:S.userId,players:[{name:S.username,id:S.userId}],status:'waiting',createdAt:Date.now()};
-  saveRoom(room); modal('modal-create',false); blobby('ROOM_CREATED',{room}); S.isHost=true; enterWaiting(room);
-}
-function joinRoom(id,_){
-  let room=getRoom(id); if(!room)return;
-  if(room.players.find(p=>p.id===S.userId)){S.isHost=room.creatorId===S.userId;enterWaiting(room);return;}
-  room.players.push({name:S.username,id:S.userId});
-  if(room.players.length>=2)room.status='ready';
-  saveRoom(room); S.isHost=false; blobby('ROOM_UPDATED',{room}); enterWaiting(room);
-}
-let seeking=false,qmTimer=null;
-function startQM(){
-  modal('modal-qm',true); seeking=true; blobby('QM_SEEK');
-  setTimeout(()=>{if(!seeking)return;const open=Object.values(getRooms()).filter(r=>r.status==='waiting'&&r.creatorId!==S.userId);if(open.length){joinRoom(open[0].id,'');cancelQM();}},900);
-  qmTimer=setTimeout(()=>{if(!seeking)return;qs('#cr-name').value=S.username+"'s Room";qs('#cr-pass').value='';doCreate();cancelQM();},6000);
-}
-function cancelQM(){seeking=false;clearTimeout(qmTimer);modal('modal-qm',false);}
-
-/* ──────────────────────────────────────────────
-   WAITING ROOM
-────────────────────────────────────────────── */
-let pollTm=null;
-function enterWaiting(room){
-  S.currentRoom=room; S.gameMode='pvp'; initGameBC(room.id);
-  clearChat('w-msgs'); addSys('w-msgs',t('joinedRoom'));
-  updateWaitUI(room); show('screen-waiting'); applyI18n();
-  pollTm=setInterval(()=>{const r=getRoom(S.currentRoom?.id);if(!r)return;S.currentRoom=r;updateWaitUI(r);},1000);
-}
-function stopPoll(){clearInterval(pollTm);pollTm=null;}
-function updateWaitUI(room){
-  qs('#w-room-name').textContent=room.name; qs('#w-code-pill').textContent=room.id;
-  qs('#ri-code').textContent=room.id; qs('#ri-pass').textContent=room.password||'—';
-  qs('#ri-pass-row').style.display=room.password?'':'none';
-  qs('#w-count').textContent=room.players.length+'/2';
-  const p0=room.players[0],p1=room.players[1];
-  if(p0){qs('#wav0').textContent=p0.name[0].toUpperCase();qs('#wn0').textContent=p0.name+(p0.id===S.userId?' ★':'');qs('#ws0').classList.remove('w-empty');qs('#wd0').classList.add('ready');}
-  const s1=qs('#ws1');
-  if(p1){s1.classList.remove('w-empty');s1.querySelector('.w-av').textContent=p1.name[0].toUpperCase();s1.querySelector('.w-name').textContent=p1.name+(p1.id===S.userId?' ★':'');qs('#wd1').classList.add('ready');qs('#ri-status').textContent=t('statusReady');qs('#ri-status').className='s-ready';}
-  else{qs('#ri-status').textContent=t('statusWaiting');qs('#ri-status').className='s-wait';}
-  const sb=qs('#btn-start-game');
-  sb.style.display=S.isHost?'':'none'; sb.disabled=!(S.isHost&&room.players.length>=2);
-  qs('#wait-hint').textContent=!S.isHost?(room.players.length>=2?t('waitForHost'):t('waitForPlayer')):'';
-}
-function bindWaiting(){
-  qs('#waiting-leave').addEventListener('click',leaveRoom);
-  qs('#btn-start-game').addEventListener('click',()=>{
-    const room=getRoom(S.currentRoom?.id); if(!room||room.players.length<2)return;
-    room.status='playing'; saveRoom(room); blobby('ROOM_UPDATED',{room}); bgame('GAME_START',{}); launchPvP(room,true);
-  });
-  qs('#ri-code').addEventListener('click',()=>{
-    navigator.clipboard?.writeText(S.currentRoom?.id).catch(()=>{});
-    const el=qs('#ri-code'); el.textContent='Copied!'; setTimeout(()=>{el.textContent=S.currentRoom?.id;},1500);
-  });
-  bindChat('w-input','w-send','w-msgs');
-}
-function leaveRoom(){
-  stopPoll(); const room=S.currentRoom; if(!room){enterRooms();return;}
-  let r=getRoom(room.id);
-  if(r){r.players=r.players.filter(p=>p.id!==S.userId);if(!r.players.length){deleteRoom(r.id);blobby('ROOM_DELETED',{roomId:r.id});}else{r.status='waiting';saveRoom(r);blobby('ROOM_UPDATED',{room:r});}}
-  bgame('PLAYER_LEFT',{}); S.currentRoom=null; gameBC?.close(); gameBC=null; enterRooms();
-}
-
-/* Broadcast handlers */
-const peers=new Set();
-function onLobbyMsg(e){
-  const m=e.data; if(m.from===S.userId)return;
-  if(m.type==='PING'){peers.add(m.from);qs('#stat-online').textContent=peers.size+1;}
-  if(m.type==='ROOM_CREATED'||m.type==='ROOM_UPDATED'){if(m.room)saveRoom(m.room);if(qs('#screen-rooms').classList.contains('active'))refreshList();updateLobbyStats();}
-  if(m.type==='ROOM_DELETED'){if(m.roomId)deleteRoom(m.roomId);if(qs('#screen-rooms').classList.contains('active'))refreshList();}
-  if(m.type==='QM_SEEK'&&seeking){cancelQM();qs('#cr-name').value=S.username+"'s Room";qs('#cr-pass').value='';doCreate();}
-}
-function onGameMsg(e) {
-  const m = e.data; if (m.from === S.userId) return;
-  const inWaiting = qs('#screen-waiting').classList.contains('active');
-  const inGame    = qs('#screen-game').classList.contains('active');
-  if (m.type === 'CHAT') {
-    addMsg(inWaiting ? 'w-msgs' : 'g-msgs', m.fromName, m.text, false);
-  }
-  if (m.type === 'PLAYER_LEFT') {
-    addSys(inWaiting ? 'w-msgs' : 'g-msgs', m.fromName + t('leftRoom'));
-    if (inGame) G.isAnimating = false;
-  }
-  if (m.type === 'GAME_START' && !S.isHost) {
-    const r = getRoom(S.currentRoom?.id);
-    if (r) launchPvP(r, false);
-  }
-  // HOST receives challenger's move → apply it → broadcast full state
-  if (m.type === 'GAME_MOVE' && S.isHost && inGame) {
-    applyOpponentMove(m.idx);
-  }
-  // CHALLENGER receives authoritative state from host → render it
-  if (m.type === 'GAME_STATE' && !S.isHost && inGame) {
-    applyGameState(m);
-  }
-}
-
-/* ──────────────────────────────────────────────
-   CHAT
-────────────────────────────────────────────── */
-function bindChat(inId,sendId,msgsId){
-  const inp=qs('#'+inId),btn=qs('#'+sendId); if(!inp||!btn)return;
-  const send=()=>{const txt=inp.value.trim();if(!txt)return;addMsg(msgsId,S.username,txt,true);bgame('CHAT',{text:txt});inp.value='';};
-  btn.addEventListener('click',send); inp.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
-}
-
 /* ═══════════════════════════════════════════════════════════
    GAME ENGINE — Host-Authoritative Multiplayer Sync
    ═══════════════════════════════════════════════════════════
@@ -750,25 +602,17 @@ function bindChat(inId,sendId,msgsId){
 
 const G = {
   board: new Array(18).fill(9),
-  score: [0, 0],      // [hostScore, challengerScore]
-  p0turn: true,       // true=host/player0 turn
-  playerIdx: 0,       // 0=host/player, 1=challenger/AI
+  score: [0, 0],   // [p0score, p1score]  p0=host/player, p1=AI/challenger
+  p0turn: true,
+  playerIdx: 0,    // 0=host/player, 1=challenger
   isAnimating: false,
   opponentName: 'AI',
   gameMode: 'ai',
 };
 
-// Is it currently my turn?
 function isMyTurn() {
-  return G.p0turn ? G.playerIdx === 0 : G.playerIdx === 1;
+  return G.p0turn ? (G.playerIdx === 0) : (G.playerIdx === 1);
 }
-
-// My hole indices (what I can click)
-function myHoles()  { return G.playerIdx === 0 ? [0,8] : [9,17]; }
-function oppHoles() { return G.playerIdx === 0 ? [9,17] : [0,8]; }
-
-// ── SETUP ──────────────────────────────────────────────────
-
 function initG() {
   G.board = new Array(18).fill(9);
   G.score = [0, 0];
@@ -776,31 +620,359 @@ function initG() {
   G.isAnimating = false;
 }
 
+/* ══════════════════════════════════════════════════
+   ROOMS — fixed management
+══════════════════════════════════════════════════ */
+function enterRooms() {
+  // Clean up any solo rooms created by this user before entering rooms screen
+  cleanMyStaleRooms();
+  qs('#rooms-avatar').textContent = S.username[0]?.toUpperCase() || '?';
+  qs('#rooms-username').textContent = S.username;
+  applyI18n(); refreshList(); show('screen-rooms');
+}
+
+function cleanMyStaleRooms() {
+  const rooms = getRooms();
+  for (const [id, room] of Object.entries(rooms)) {
+    // Delete waiting rooms created by me that have only me (I navigated away)
+    if (room.creatorId === S.userId && room.status === 'waiting' &&
+        room.players.length <= 1 && room.players[0]?.id === S.userId) {
+      deleteRoom(id);
+      blobby('ROOM_DELETED', { roomId: id });
+    }
+  }
+}
+
+function bindRooms() {
+  qs('#rooms-back').addEventListener('click', () => {
+    cleanMyStaleRooms();
+    enterLobby();
+  });
+  qs('#btn-refresh').addEventListener('click', refreshList);
+  qs('#btn-create-room').addEventListener('click', () => {
+    qs('#cr-name').value = S.username + "'s Room";
+    qs('#cr-pass').value = '';
+    modal('modal-create', true);
+  });
+  qs('#close-create').addEventListener('click', () => modal('modal-create', false));
+  qs('#btn-confirm-create').addEventListener('click', doCreate);
+  qs('#close-password').addEventListener('click', () => modal('modal-password', false));
+  qs('#btn-confirm-join').addEventListener('click', doJoinPW);
+  qs('#join-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doJoinPW(); });
+  qs('#btn-quick-match').addEventListener('click', startQM);
+  qs('#btn-cancel-qm').addEventListener('click', cancelQM);
+  [qs('#modal-create'), qs('#modal-password')].forEach(m =>
+    m?.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+}
+
+function refreshList() {
+  cleanRooms();
+  const open = Object.values(getRooms()).filter(r => r.status === 'waiting' && r.id !== 'undefined');
+  const list = qs('#rooms-list');
+  list.querySelectorAll('.room-item').forEach(el => el.remove());
+  qs('#rooms-empty').style.display = open.length ? 'none' : '';
+  open.sort((a, b) => b.createdAt - a.createdAt).forEach(room => {
+    const el = document.createElement('div');
+    el.className = 'room-item';
+    el.innerHTML = `
+      <div>
+        <div class="ri-name">${esc(room.name)} ${room.password ? '🔒' : ''}</div>
+        <div class="ri-meta">${t('waitingHost')}: ${esc(room.creator)} · ${room.players.length}/2</div>
+      </div>
+      <button class="btn-join" data-id="${room.id}">${t('joinRoom')}</button>`;
+    el.querySelector('.btn-join').addEventListener('click', () => tryJoin(room.id));
+    list.appendChild(el);
+  });
+  qs('#stat-rooms').textContent = open.length;
+}
+
+let pendingRoom = null;
+function tryJoin(id) {
+  const room = getRoom(id);
+  if (!room || room.status !== 'waiting') { refreshList(); return; }
+  if (room.players.length >= 2) { alert('Room is full.'); refreshList(); return; }
+  if (room.password) {
+    pendingRoom = id;
+    qs('#join-pass').value = ''; qs('#pass-err').textContent = '';
+    modal('modal-password', true);
+  } else {
+    joinRoom(id, '');
+  }
+}
+function doJoinPW() {
+  const pass = qs('#join-pass').value.trim(), room = getRoom(pendingRoom);
+  if (!room) return;
+  if (room.password && room.password !== pass) { qs('#pass-err').textContent = t('wrongPassword'); return; }
+  modal('modal-password', false); joinRoom(pendingRoom, pass);
+}
+function doCreate() {
+  const name = qs('#cr-name').value.trim() || S.username + "'s Room";
+  const pass = qs('#cr-pass').value.trim();
+  const room = {
+    id: genRoomCode(), name, password: pass || null,
+    creator: S.username, creatorId: S.userId,
+    players: [{ name: S.username, id: S.userId }],
+    status: 'waiting', createdAt: Date.now(),
+  };
+  saveRoom(room); modal('modal-create', false);
+  blobby('ROOM_CREATED', { room });
+  S.isHost = true; enterWaiting(room);
+}
+function joinRoom(id, _) {
+  let room = getRoom(id); if (!room) return;
+  if (room.players.find(p => p.id === S.userId)) {
+    S.isHost = room.creatorId === S.userId; enterWaiting(room); return;
+  }
+  if (room.players.length >= 2) { alert('Room is full.'); return; }
+  room.players.push({ name: S.username, id: S.userId });
+  if (room.players.length >= 2) room.status = 'ready';
+  saveRoom(room); S.isHost = false;
+  blobby('ROOM_UPDATED', { room }); enterWaiting(room);
+}
+let seeking = false, qmTimer = null;
+function startQM() {
+  modal('modal-qm', true); seeking = true; blobby('QM_SEEK');
+  setTimeout(() => {
+    if (!seeking) return;
+    const open = Object.values(getRooms()).filter(r =>
+      r.status === 'waiting' && r.creatorId !== S.userId && r.players.length < 2);
+    if (open.length) { joinRoom(open[0].id, ''); cancelQM(); }
+  }, 900);
+  qmTimer = setTimeout(() => {
+    if (!seeking) return;
+    qs('#cr-name').value = S.username + "'s Room";
+    qs('#cr-pass').value = '';
+    doCreate(); cancelQM();
+  }, 6000);
+}
+function cancelQM() { seeking = false; clearTimeout(qmTimer); modal('modal-qm', false); }
+
+/* ══════════════════════════════════════════════════
+   WAITING ROOM — fixed host transfer + lobby back
+══════════════════════════════════════════════════ */
+let pollTm = null;
+function enterWaiting(room) {
+  S.currentRoom = room; S.gameMode = 'pvp';
+  initGameBC(room.id);
+  clearChat('w-msgs');
+  addSys('w-msgs', t('joinedRoom'));
+  updateWaitUI(room);
+  show('screen-waiting'); applyI18n();
+  pollTm = setInterval(() => {
+    const r = getRoom(S.currentRoom?.id);
+    if (!r) { stopPoll(); enterRooms(); return; }
+    S.currentRoom = r; updateWaitUI(r);
+  }, 1000);
+}
+function stopPoll() { clearInterval(pollTm); pollTm = null; }
+
+function updateWaitUI(room) {
+  qs('#w-room-name').textContent = room.name;
+  qs('#w-code-pill').textContent = room.id;
+  qs('#ri-code').textContent = room.id;
+  qs('#ri-pass').textContent = room.password || '—';
+  if (qs('#ri-pass-row')) qs('#ri-pass-row').style.display = room.password ? '' : 'none';
+  qs('#w-count').textContent = room.players.length + '/2';
+  const p0 = room.players[0], p1 = room.players[1];
+  if (p0) {
+    qs('#wav0').textContent = p0.name[0].toUpperCase();
+    qs('#wn0').textContent = p0.name + (p0.id === S.userId ? ' ★' : '');
+    qs('#ws0')?.classList.remove('w-empty');
+    qs('#wd0')?.classList.add('ready');
+  }
+  const s1 = qs('#ws1');
+  if (p1 && s1) {
+    s1.classList.remove('w-empty');
+    const av = s1.querySelector('.w-av');
+    const nm = s1.querySelector('.w-name');
+    if (av) { av.classList.remove('empty-av'); av.textContent = p1.name[0].toUpperCase(); }
+    if (nm) nm.textContent = p1.name + (p1.id === S.userId ? ' ★' : '');
+    qs('#wd1')?.classList.add('ready');
+    qs('#ri-status').textContent = t('statusReady');
+    qs('#ri-status').className = 's-ready';
+  } else {
+    qs('#ri-status').textContent = t('statusWaiting');
+    qs('#ri-status').className = 's-wait';
+  }
+  const isNowHost = room.creatorId === S.userId;
+  if (isNowHost !== S.isHost) S.isHost = isNowHost;
+  const sb = qs('#btn-start-game');
+  sb.style.display = S.isHost ? '' : 'none';
+  sb.disabled = !(S.isHost && room.players.length >= 2);
+  qs('#wait-hint').textContent = !S.isHost
+    ? (room.players.length >= 2 ? t('waitForHost') : t('waitForPlayer')) : '';
+}
+
+function bindWaiting() {
+  // "Leave" → back to rooms list
+  qs('#waiting-leave').addEventListener('click', leaveRoom);
+  qs('#btn-start-game').addEventListener('click', () => {
+    const room = getRoom(S.currentRoom?.id);
+    if (!room || room.players.length < 2) return;
+    room.status = 'playing'; saveRoom(room);
+    blobby('ROOM_UPDATED', { room });
+    bgame('GAME_START', {});
+    launchPvP(room, true);
+  });
+  qs('#ri-code').addEventListener('click', () => {
+    navigator.clipboard?.writeText(S.currentRoom?.id).catch(() => {});
+    const el = qs('#ri-code');
+    el.textContent = 'Copied!';
+    setTimeout(() => { el.textContent = S.currentRoom?.id; }, 1500);
+  });
+  bindChat('w-input', 'w-send', 'w-msgs');
+}
+
+function leaveRoom() {
+  stopPoll();
+  const room = S.currentRoom;
+  if (!room) { enterRooms(); return; }
+  let r = getRoom(room.id);
+  if (r) {
+    r.players = r.players.filter(p => p.id !== S.userId);
+    if (!r.players.length) {
+      // Last person left → delete room
+      deleteRoom(r.id);
+      blobby('ROOM_DELETED', { roomId: r.id });
+    } else {
+      // Transfer host to first remaining player
+      r.creatorId = r.players[0].id;
+      r.creator = r.players[0].name;
+      r.status = 'waiting';
+      saveRoom(r);
+      blobby('ROOM_UPDATED', { room: r });
+    }
+  }
+  bgame('PLAYER_LEFT', {});
+  S.currentRoom = null;
+  gameBC?.close(); gameBC = null;
+  enterRooms(); // go back to rooms list, not lobby
+}
+
+/* Broadcast handlers */
+const peers = new Set();
+function onLobbyMsg(e) {
+  const m = e.data; if (m.from === S.userId) return;
+  if (m.type === 'PING') {
+    peers.add(m.from);
+    const el = qs('#stat-online'); if (el) el.textContent = peers.size + 1;
+  }
+  if (m.type === 'ROOM_CREATED' || m.type === 'ROOM_UPDATED') {
+    if (m.room) saveRoom(m.room);
+    if (qs('#screen-rooms').classList.contains('active')) refreshList();
+    updateLobbyStats();
+  }
+  if (m.type === 'ROOM_DELETED') {
+    if (m.roomId) deleteRoom(m.roomId);
+    if (qs('#screen-rooms').classList.contains('active')) refreshList();
+    updateLobbyStats();
+  }
+  if (m.type === 'QM_SEEK' && seeking) {
+    cancelQM();
+    qs('#cr-name').value = S.username + "'s Room";
+    qs('#cr-pass').value = '';
+    doCreate();
+  }
+}
+function onGameMsg(e) {
+  const m = e.data; if (m.from === S.userId) return;
+  const inWaiting = qs('#screen-waiting').classList.contains('active');
+  const inGame = qs('#screen-game').classList.contains('active');
+  if (m.type === 'CHAT') {
+    addMsg(inWaiting ? 'w-msgs' : 'g-msgs', m.fromName, m.text, false);
+  }
+  if (m.type === 'PLAYER_LEFT') {
+    if (inWaiting) {
+      addSys('w-msgs', m.fromName + t('leftRoom'));
+    } else if (inGame) {
+      addSys('g-msgs', m.fromName + t('leftRoom'));
+      G.isAnimating = false;
+    }
+  }
+  if (m.type === 'GAME_START' && !S.isHost) {
+    const r = getRoom(S.currentRoom?.id);
+    if (r) launchPvP(r, false);
+  }
+  if (m.type === 'GAME_MOVE' && S.isHost && inGame) {
+    applyOpponentMove(m.idx);
+  }
+  if (m.type === 'GAME_STATE' && !S.isHost && inGame) {
+    applyGameState(m);
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   CHAT
+══════════════════════════════════════════════════ */
+function bindChat(inId, sendId, msgsId) {
+  const inp = qs('#' + inId), btn = qs('#' + sendId);
+  if (!inp || !btn) return;
+  const send = () => {
+    const txt = inp.value.trim(); if (!txt) return;
+    addMsg(msgsId, S.username, txt, true);
+    bgame('CHAT', { text: txt });
+    inp.value = '';
+  };
+  btn.addEventListener('click', send);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+}
+function addMsg(cId, name, text, self) {
+  const c = qs('#' + cId); if (!c) return;
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const d = document.createElement('div');
+  d.className = 'chat-bubble' + (self ? ' cb-self' : '');
+  d.innerHTML = `<div class="cb-hdr"><span class="cb-name">${esc(name)}</span><span class="cb-time">${time}</span></div><div class="cb-txt">${esc(text)}</div>`;
+  c.appendChild(d); c.scrollTop = c.scrollHeight;
+}
+function addSys(cId, text) {
+  const c = qs('#' + cId); if (!c) return;
+  const d = document.createElement('div'); d.className = 'chat-sys'; d.textContent = text;
+  c.appendChild(d); c.scrollTop = c.scrollHeight;
+}
+function clearChat(cId) { const c = qs('#' + cId); if (c) c.innerHTML = ''; }
+
+/* ══════════════════════════════════════════════════
+   GAME SETUP
+══════════════════════════════════════════════════ */
 function startAIGame() {
-  G.gameMode = 'ai'; G.playerIdx = 0; G.opponentName = 'AI';
+  G.gameMode = 'ai';
+  G.playerIdx = 0;
+  G.opponentName = 'AI';
   S.gameMode = 'ai';
   initG();
   setupGameUI('AI', S.username, false);
-  clearChat('g-msgs'); addSys('g-msgs', t('gameStarted'));
+  clearChat('g-msgs');
+  addSys('g-msgs', t('gameStarted'));
+  addSys('g-msgs', t('yourTurnMsg'));
   qs('#win-overlay').classList.remove('show');
-  show('screen-game'); applyI18n(); renderBoard();
+  show('screen-game');
+  applyI18n();
+  renderBoard();
 }
 
 function launchPvP(room, isHost) {
-  stopPoll(); S.isHost = isHost; S.currentRoom = room;
+  stopPoll();
+  S.isHost = isHost;
+  S.currentRoom = room;
   const opp = room.players.find(p => p.id !== S.userId);
-  G.gameMode = 'pvp'; S.gameMode = 'pvp';
+  G.gameMode = 'pvp';
+  S.gameMode = 'pvp';
   G.playerIdx = isHost ? 0 : 1;
   G.opponentName = opp?.name || 'Opponent';
   initG();
   setupGameUI(G.opponentName, S.username, true);
-  clearChat('g-msgs'); addSys('g-msgs', t('gameStarted'));
+  clearChat('g-msgs');
+  addSys('g-msgs', t('gameStarted'));
   addSys('g-msgs', isMyTurn() ? t('yourTurnMsg') : t('waitingFor') + G.opponentName + '…');
   qs('#win-overlay').classList.remove('show');
-  show('screen-game'); applyI18n(); renderBoard();
+  show('screen-game');
+  applyI18n();
+  renderBoard();
 }
 
 function setupGameUI(topName, botName, showChat) {
+  // TOP = opponent, BOTTOM = me
   qs('#gb-top-name').textContent = topName;
   qs('#gb-bot-name').textContent = botName;
   qs('#gb-top-av').textContent = topName[0]?.toUpperCase() || '?';
@@ -809,22 +981,28 @@ function setupGameUI(topName, botName, showChat) {
   qs('#gb-bot-score').textContent = '0';
   qs('#wn1').textContent = botName;
   qs('#wn2').textContent = topName;
+  // Label the kazhan bars with player names
+  const topKzLbl = qs('#kz-top-lbl');
+  const botKzLbl = qs('#kz-bot-lbl');
+  if (topKzLbl) topKzLbl.textContent = topName;
+  if (botKzLbl) botKzLbl.textContent = botName;
   qs('#chat-col').classList.toggle('collapsed', !showChat);
 }
 
-// ── RENDERING ─────────────────────────────────────────────
-
+/* ══════════════════════════════════════════════════
+   BOARD RENDERING
+══════════════════════════════════════════════════ */
 function renderBoard() {
   const aiRow = qs('#ai-row'), plRow = qs('#player-row');
+  if (!aiRow || !plRow) return;
   aiRow.innerHTML = ''; plRow.innerHTML = '';
 
-  /* TOP ROW = opponent holes (CSS has flex-direction:row-reverse so
-     we append in natural order and they display reversed)          */
+  // TOP ROW = opponent holes
   const topStart = G.playerIdx === 0 ? 9  : 0;
   const topEnd   = G.playerIdx === 0 ? 18 : 9;
   for (let i = topStart; i < topEnd; i++) aiRow.appendChild(mkHole(i, false));
 
-  /* BOTTOM ROW = my holes */
+  // BOTTOM ROW = my holes
   const botStart = G.playerIdx === 0 ? 0 : 9;
   const botEnd   = G.playerIdx === 0 ? 9 : 18;
   for (let i = botStart; i < botEnd; i++) plRow.appendChild(mkHole(i, true));
@@ -835,81 +1013,95 @@ function renderBoard() {
 
 function mkHole(i, isMyHole) {
   const el = document.createElement('div');
-  el.className = 'hole'; el.dataset.index = i;
-  const clickable = isMyHole && isMyTurn() && !G.isAnimating && G.board[i] > 0;
-  if (clickable) { el.classList.add('clickable'); el.addEventListener('click', () => onHoleClick(i)); }
+  el.className = 'hole';
+  el.dataset.index = i;
+  const count = G.board[i] || 0;
+  const clickable = isMyHole && isMyTurn() && !G.isAnimating && count > 0;
+  if (clickable) {
+    el.classList.add('clickable');
+    el.addEventListener('click', () => onHoleClick(i));
+  }
   const wrap = document.createElement('div');
   wrap.className = 'stones-wrap';
-  const n = Math.min(G.board[i] || 0, 18);
+  const n = Math.min(count, 18);
   for (let j = 0; j < n; j++) {
     const s = document.createElement('div'); s.className = 'stone'; wrap.appendChild(s);
   }
   el.appendChild(wrap);
   const lbl = document.createElement('div');
-  lbl.className = 'hole-count'; lbl.textContent = G.board[i] || 0; el.appendChild(lbl);
+  lbl.className = 'hole-count';
+  lbl.textContent = count;
+  el.appendChild(lbl);
   return el;
 }
 
 function updateTurnUI() {
   const pill = qs('#turn-pill'); if (!pill) return;
   const mine = isMyTurn();
-  pill.textContent = mine ? t('yourTurn') : (G.gameMode === 'ai' ? t('aiTurn') : t('opponentTurn'));
+  if (G.gameMode === 'ai') {
+    pill.textContent = mine ? t('yourTurn') : t('aiTurn');
+  } else {
+    pill.textContent = mine ? t('yourTurn') : t('opponentTurn');
+  }
   pill.classList.toggle('ai-turn', !mine);
   qs('#pip-bot')?.classList.toggle('active', mine);
   qs('#pip-top')?.classList.toggle('active', !mine);
 }
 
 function updateScoreUI() {
-  // My score = score[playerIdx], opp score = score[1-playerIdx]
   const myS  = G.score[G.playerIdx];
   const oppS = G.score[1 - G.playerIdx];
-  qs('#gb-bot-score').textContent = myS;
-  qs('#gb-top-score').textContent = oppS;
-  qs('#kz-bot-n').textContent = myS;
-  qs('#kz-top-n').textContent = oppS;
+  if (qs('#gb-bot-score')) qs('#gb-bot-score').textContent = myS;
+  if (qs('#gb-top-score')) qs('#gb-top-score').textContent = oppS;
+  if (qs('#kz-bot-n')) qs('#kz-bot-n').textContent = myS;
+  if (qs('#kz-top-n')) qs('#kz-top-n').textContent = oppS;
   renderKazhan('kz-bot', myS);
   renderKazhan('kz-top', oppS);
 }
 
 function renderKazhan(id, score) {
-  const el = qs('#' + id); if (!el) return; el.innerHTML = '';
+  const el = qs('#' + id); if (!el) return;
+  el.innerHTML = '';
   const n = Math.min(score, 40);
   for (let i = 0; i < n; i++) {
     const s = document.createElement('div'); s.className = 'kz-stone'; el.appendChild(s);
   }
 }
 
-// ── GAME LOGIC ─────────────────────────────────────────────
-
+/* ══════════════════════════════════════════════════
+   GAME LOGIC — Host Authoritative
+══════════════════════════════════════════════════ */
 function onHoleClick(i) {
   if (!isMyTurn() || G.isAnimating || !G.board[i]) return;
 
   if (G.gameMode === 'pvp' && G.playerIdx === 1) {
-    // Challenger: send move to host, host will apply and broadcast state
-    G.isAnimating = true; // block double-click
+    // Challenger: request move from host
+    G.isAnimating = true;
     bgame('GAME_MOVE', { idx: i });
     return;
   }
-
-  // Host or AI game: apply move locally
+  // Host (pvp) or player (ai): run move locally
   G.isAnimating = true;
-  const isP0Move = G.p0turn; // capture from p0's perspective
-  runDistribute(i, isP0Move, () => {
+  const wasP0Turn = G.p0turn;
+  runDistribute(i, wasP0Turn, () => {
     G.p0turn = !G.p0turn;
     G.isAnimating = false;
     if (G.gameMode === 'pvp') broadcastGameState();
     if (!checkEnd()) {
       renderBoard();
-      if (G.gameMode === 'ai' && !isMyTurn()) setTimeout(aiTurn, 900);
+      if (G.gameMode === 'ai' && !isMyTurn()) {
+        setTimeout(aiTurn, 900);
+      }
     }
   });
 }
 
-// Apply a move received from challenger (PvP host only)
 function applyOpponentMove(idx) {
-  if (G.playerIdx !== 0) return; // only host runs this
+  // Called on HOST when challenger sends GAME_MOVE
+  if (G.playerIdx !== 0) return;
+  if (!G.board[idx]) return;
   G.isAnimating = true;
-  runDistribute(idx, false, () => { // false = challenger's move = p1's move
+  runDistribute(idx, false, () => {   // false = p1 (challenger) move
     G.p0turn = !G.p0turn;
     G.isAnimating = false;
     broadcastGameState();
@@ -931,24 +1123,24 @@ function runDistribute(start, isP0Move, cb) {
       stones--;
       flashHole(cur);
       renderBoard();
-      setTimeout(step, 220);
+      setTimeout(step, 200);
     } else {
       runCapture(cur, isP0Move);
       updateScoreUI();
       cb();
     }
   };
-  setTimeout(step, 180);
+  setTimeout(step, 160);
 }
 
 function runCapture(pos, isP0Move) {
-  /* Player 0 (host) captures when landing on player 1's holes (9-17) with even count.
-     Player 1 (challenger/AI) captures when landing on player 0's holes (0-8) with even count. */
   if (isP0Move) {
+    // P0 captures from P1's side (holes 9-17)
     if (pos >= 9 && G.board[pos] % 2 === 0 && G.board[pos] > 0) {
       G.score[0] += G.board[pos]; G.board[pos] = 0; renderBoard();
     }
   } else {
+    // P1 captures from P0's side (holes 0-8)
     if (pos < 9 && G.board[pos] % 2 === 0 && G.board[pos] > 0) {
       G.score[1] += G.board[pos]; G.board[pos] = 0; renderBoard();
     }
@@ -959,17 +1151,17 @@ function flashHole(i) {
   document.querySelectorAll('.hole').forEach(h => {
     if (parseInt(h.dataset.index) === i) {
       h.classList.add('flash');
-      setTimeout(() => h.classList.remove('flash'), 420);
+      setTimeout(() => h.classList.remove('flash'), 380);
     }
   });
 }
 
 function checkEnd() {
-  const p0empty = G.board.slice(0, 9).every(x => !x);
-  const p1empty = G.board.slice(9).every(x => !x);
-  if (G.score[0] >= 81 || G.score[1] >= 81 || p0empty || p1empty) {
-    // Sweep remaining stones to the player who still has holes
-    for (let i = 0; i < 9;  i++) { G.score[0] += G.board[i]; G.board[i] = 0; }
+  const p0E = G.board.slice(0, 9).every(x => !x);
+  const p1E = G.board.slice(9).every(x => !x);
+  if (G.score[0] >= 81 || G.score[1] >= 81 || p0E || p1E) {
+    // Sweep remaining
+    for (let i = 0;  i < 9;  i++) { G.score[0] += G.board[i]; G.board[i] = 0; }
     for (let i = 9; i < 18; i++) { G.score[1] += G.board[i]; G.board[i] = 0; }
     if (G.gameMode === 'pvp' && G.playerIdx === 0) broadcastGameState();
     updateScoreUI(); renderBoard();
@@ -979,17 +1171,10 @@ function checkEnd() {
   return false;
 }
 
-// ── HOST BROADCASTS FULL STATE ─────────────────────────────
-
 function broadcastGameState() {
-  bgame('GAME_STATE', {
-    board:   [...G.board],
-    score:   [...G.score],
-    p0turn:  G.p0turn,
-  });
+  bgame('GAME_STATE', { board: [...G.board], score: [...G.score], p0turn: G.p0turn });
 }
 
-// Apply received state (challenger side)
 function applyGameState(msg) {
   G.board   = [...msg.board];
   G.score   = [...msg.score];
@@ -998,49 +1183,43 @@ function applyGameState(msg) {
   if (!checkEnd()) renderBoard();
 }
 
-// ── AI ─────────────────────────────────────────────────────
-
 function aiTurn() {
-  // AI is player 1 (holes 9-17)
   const valid = [];
   for (let i = 9; i < 18; i++) if (G.board[i]) valid.push(i);
   if (!valid.length) { checkEnd(); return; }
-
-  // Heuristic: prefer capturing moves
   let move = null;
   for (const m of valid) {
     const land = (m + G.board[m] - 1) % 18;
     if (land < 9 && (G.board[land] + 1) % 2 === 0) { move = m; break; }
   }
   if (move === null) move = valid[Math.floor(Math.random() * valid.length)];
-
   G.isAnimating = true;
-  runDistribute(move, false, () => {  // false = p1 (AI) move
-    G.p0turn = true; // back to player
+  runDistribute(move, false, () => {
+    G.p0turn = true;
     G.isAnimating = false;
     if (!checkEnd()) renderBoard();
   });
 }
 
-// ── WIN ─────────────────────────────────────────────────────
-
 function showWin() {
-  const myS = G.score[G.playerIdx], oppS = G.score[1 - G.playerIdx];
-  const botName = qs('#gb-bot-name').textContent;
-  const topName = qs('#gb-top-name').textContent;
+  const myS  = G.score[G.playerIdx];
+  const oppS = G.score[1 - G.playerIdx];
+  const myName  = qs('#gb-bot-name').textContent;
+  const oppName = qs('#gb-top-name').textContent;
   let emoji, title;
   if (myS > oppS)       { emoji = '🏆'; title = t('youWin'); }
   else if (oppS > myS)  { emoji = '😔'; title = G.gameMode === 'ai' ? t('aiWins') : G.opponentName + t('wins'); }
   else                  { emoji = '🤝'; title = t('draw'); }
   qs('#win-emoji').textContent = emoji;
   qs('#win-title').textContent = title;
-  qs('#wv1').textContent = myS;  qs('#wv2').textContent = oppS;
-  qs('#wn1').textContent = botName; qs('#wn2').textContent = topName;
+  qs('#wv1').textContent = myS;   qs('#wv2').textContent = oppS;
+  qs('#wn1').textContent = myName; qs('#wn2').textContent = oppName;
   qs('#win-overlay').classList.add('show');
 }
 
-// ── GAME SCREEN BINDINGS ───────────────────────────────────
-
+/* ══════════════════════════════════════════════════
+   GAME SCREEN BINDINGS
+══════════════════════════════════════════════════ */
 function bindGame() {
   qs('#btn-quit').addEventListener('click', () => {
     if (G.gameMode === 'pvp') { bgame('PLAYER_LEFT', {}); leaveRoomSilent(); }
@@ -1068,8 +1247,14 @@ function leaveRoomSilent() {
   let r = getRoom(room.id);
   if (r) {
     r.players = r.players.filter(p => p.id !== S.userId);
-    if (!r.players.length) { deleteRoom(r.id); blobby('ROOM_DELETED', { roomId: r.id }); }
-    else { r.status = 'waiting'; saveRoom(r); blobby('ROOM_UPDATED', { room: r }); }
+    if (!r.players.length) {
+      deleteRoom(r.id); blobby('ROOM_DELETED', { roomId: r.id });
+    } else {
+      r.creatorId = r.players[0].id;
+      r.creator = r.players[0].name;
+      r.status = 'waiting'; saveRoom(r);
+      blobby('ROOM_UPDATED', { room: r });
+    }
   }
   S.currentRoom = null; gameBC?.close(); gameBC = null;
 }

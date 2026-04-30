@@ -25,12 +25,12 @@
   --border-l: rgba(139,26,26,0.4);
   --shadow:   rgba(60,20,5,0.2);
 
-  /* Ою border: alternating red-gold-blue-gold diamonds on cream */
-  --oyu-h: 20px;
-  --oyu-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='20'%3E%3Crect width='80' height='20' fill='%23C9A84C'/%3E%3Cpolygon points='10,2 18,10 10,18 2,10' fill='%238B1A1A'/%3E%3Cpolygon points='30,2 38,10 30,18 22,10' fill='%23FBF0D5'/%3E%3Cpolygon points='50,2 58,10 50,18 42,10' fill='%231B4372'/%3E%3Cpolygon points='70,2 78,10 70,18 62,10' fill='%23FBF0D5'/%3E%3Ccircle cx='10' cy='10' r='2' fill='%23E8C85A'/%3E%3Ccircle cx='30' cy='10' r='2' fill='%23C9A84C'/%3E%3Ccircle cx='50' cy='10' r='2' fill='%23E8C85A'/%3E%3Ccircle cx='70' cy='10' r='2' fill='%23C9A84C'/%3E%3C/svg%3E");
+  /* Ою border — Kazakh scroll arabesque (ram-horn / scrollwork) */
+  --oyu-h: 24px;
+  --oyu-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='24'%3E%3Crect width='120' height='24' fill='%23C9A84C'/%3E%3Crect x='0' y='0' width='120' height='3' fill='%238B1A1A'/%3E%3Crect x='0' y='21' width='120' height='3' fill='%238B1A1A'/%3E%3Cpath d='M8,12 Q14,4 20,12 Q26,20 32,12' fill='none' stroke='%238B1A1A' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M32,12 Q38,4 44,12 Q50,20 56,12' fill='none' stroke='%231B4372' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M56,12 Q62,4 68,12 Q74,20 80,12' fill='none' stroke='%238B1A1A' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M80,12 Q86,4 92,12 Q98,20 104,12' fill='none' stroke='%231B4372' stroke-width='2.5' stroke-linecap='round'/%3E%3Ccircle cx='20' cy='12' r='3' fill='%238B1A1A'/%3E%3Ccircle cx='44' cy='12' r='3' fill='%231B4372'/%3E%3Ccircle cx='68' cy='12' r='3' fill='%238B1A1A'/%3E%3Ccircle cx='92' cy='12' r='3' fill='%231B4372'/%3E%3Cpolygon points='8,10 10,12 8,14 6,12' fill='%23FBF0D5'/%3E%3Cpolygon points='56,10 58,12 56,14 54,12' fill='%23FBF0D5'/%3E%3Cpolygon points='104,10 106,12 104,14 102,12' fill='%23FBF0D5'/%3E%3C/svg%3E");
 
   /* Blue-variant oyu border */
-  --oyu-blue: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='20'%3E%3Crect width='80' height='20' fill='%231B4372'/%3E%3Cpolygon points='10,2 18,10 10,18 2,10' fill='%23FBF0D5'/%3E%3Cpolygon points='30,2 38,10 30,18 22,10' fill='%23C9A84C'/%3E%3Cpolygon points='50,2 58,10 50,18 42,10' fill='%23FBF0D5'/%3E%3Cpolygon points='70,2 78,10 70,18 62,10' fill='%23C9A84C'/%3E%3Ccircle cx='10' cy='10' r='2' fill='%23E8C85A'/%3E%3Ccircle cx='30' cy='10' r='2' fill='%238B1A1A'/%3E%3Ccircle cx='50' cy='10' r='2' fill='%23E8C85A'/%3E%3Ccircle cx='70' cy='10' r='2' fill='%238B1A1A'/%3E%3C/svg%3E");
+  --oyu-blue: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='24'%3E%3Crect width='120' height='24' fill='%231B4372'/%3E%3Crect x='0' y='0' width='120' height='3' fill='%23C9A84C'/%3E%3Crect x='0' y='21' width='120' height='3' fill='%23C9A84C'/%3E%3Cpath d='M8,12 Q14,4 20,12 Q26,20 32,12' fill='none' stroke='%23E8C85A' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M32,12 Q38,4 44,12 Q50,20 56,12' fill='none' stroke='%23FBF0D5' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M56,12 Q62,4 68,12 Q74,20 80,12' fill='none' stroke='%23E8C85A' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M80,12 Q86,4 92,12 Q98,20 104,12' fill='none' stroke='%23FBF0D5' stroke-width='2.5' stroke-linecap='round'/%3E%3Ccircle cx='20' cy='12' r='3' fill='%23E8C85A'/%3E%3Ccircle cx='44' cy='12' r='3' fill='%23FBF0D5'/%3E%3Ccircle cx='68' cy='12' r='3' fill='%23E8C85A'/%3E%3Ccircle cx='92' cy='12' r='3' fill='%23FBF0D5'/%3E%3Cpolygon points='8,10 10,12 8,14 6,12' fill='%23C9A84C'/%3E%3Cpolygon points='56,10 58,12 56,14 54,12' fill='%23C9A84C'/%3E%3Cpolygon points='104,10 106,12 104,14 102,12' fill='%23C9A84C'/%3E%3C/svg%3E");
 
   /* Background diamond grid (subtle, on cream) */
   --bg-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cpolygon points='40,5 75,40 40,75 5,40' fill='none' stroke='rgba(139,26,26,0.12)' stroke-width='1.5'/%3E%3Cpolygon points='40,20 60,40 40,60 20,40' fill='none' stroke='rgba(27,67,114,0.08)' stroke-width='1'/%3E%3Cpolygon points='40,2 43,5 40,8 37,5' fill='rgba(201,168,76,0.35)'/%3E%3Cpolygon points='40,72 43,75 40,78 37,75' fill='rgba(201,168,76,0.35)'/%3E%3Cpolygon points='2,40 5,37 8,40 5,43' fill='rgba(201,168,76,0.35)'/%3E%3Cpolygon points='72,40 75,37 78,40 75,43' fill='rgba(201,168,76,0.35)'/%3E%3C/svg%3E");
@@ -59,7 +59,7 @@ button{cursor:pointer;border:none;background:none}
   height: var(--oyu-h);
   background-image: var(--oyu-img);
   background-repeat: repeat-x;
-  background-size: 80px var(--oyu-h);
+  background-size: 120px var(--oyu-h);
   flex-shrink: 0;
 }
 .blue-oyu { background-image: var(--oyu-blue); }
@@ -69,7 +69,7 @@ button{cursor:pointer;border:none;background:none}
   height: 22px;
   background-image: var(--oyu-img);
   background-repeat: repeat-x;
-  background-size: 80px 22px;
+  background-size: 120px 22px;
   flex-shrink: 0;
   box-shadow: 0 2px 6px rgba(139,26,26,0.15);
 }
@@ -564,10 +564,13 @@ button{cursor:pointer;border:none;background:none}
 
 /* Kazhan */
 .kazhan-bar {
-  display: flex; align-items: center; gap: 10px; width: 100%; max-width: 680px;
-  background: #fff; border: 2px solid var(--border); border-radius: 9px; padding: 7px 12px;
+  display: flex; align-items: center; gap: 8px; width: 100%; max-width: 680px;
+  background: #fff; border: 2px solid var(--border); border-radius: 9px; padding: 6px 12px;
 }
-.kz-lbl { font-size: .58rem; letter-spacing: .15em; text-transform: uppercase; color: var(--text-m); flex-shrink: 0; min-width: 52px; font-family: 'Cinzel', serif; }
+.kz-lbl { font-size: .56rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-m); flex-shrink: 0; font-family: 'Cinzel', serif; }
+.kz-owner { font-size: .72rem; font-weight: 700; color: var(--red); flex-shrink: 0; font-family: 'Cinzel', serif; min-width: 60px; }
+.top-kz .kz-owner { color: var(--cobalt); }
+.bot-kz .kz-owner { color: var(--red); }
 .kz-stones { display: flex; flex-wrap: wrap; gap: 2px; flex: 1; min-height: 14px; }
 .kz-stone { width: 9px; height: 9px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #ddd 50%, #bbb); box-shadow: 1px 1px 2px rgba(0,0,0,.25); animation: popIn .15s ease-out; }
 .kz-num { font-family: 'Cinzel Decorative', serif; font-size: .9rem; color: var(--red); flex-shrink: 0; min-width: 26px; text-align: right; }
@@ -666,3 +669,37 @@ button{cursor:pointer;border:none;background:none}
 *::-webkit-scrollbar-track{background:var(--cream-d)}
 *::-webkit-scrollbar-thumb{background:rgba(139,26,26,0.3);border-radius:2px}
 *::-webkit-scrollbar-thumb:hover{background:var(--red)}
+
+/* ══ Extra fixes ══ */
+
+/* Game header: fix score overflow */
+.game-bar { flex-wrap: nowrap; min-height: 52px; }
+.gb-player { min-width: 0; }
+.gb-info { min-width: 0; overflow: hidden; }
+.gb-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+
+/* Make board fill more of the screen */
+.board-col { gap: 5px; }
+.board { border-radius: 14px; }
+.kazhan-bar { border-radius: 8px; }
+
+/* Hole number not cut off */
+.hole-count { font-size: .58rem; }
+
+/* Turn pill more visible */
+.turn-pill { font-size: .66rem; padding: 5px 16px; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+
+/* Win overlay z-index fix */
+.win-overlay { position: fixed; z-index: 200; }
+
+/* Mode card click target covers whole card */
+.mode-card { cursor: pointer; }
+
+/* Rooms: prevent ghost rooms display */
+.room-item { cursor: default; }
+
+/* Oyu strip sizing fix */
+.oyu-strip { background-size: 120px var(--oyu-h); }
+.oyu-topbar { background-size: 120px 22px; }
+.mc-oyu-top, .mc-oyu-bot { background-size: 120px var(--oyu-h); }
+.board-oyu { background-size: 120px var(--oyu-h); }
